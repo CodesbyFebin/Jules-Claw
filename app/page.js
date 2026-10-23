@@ -243,8 +243,8 @@ export default function Home() {
     <div className="open-jules-app" style={styles.app}>
       <aside className="open-jules-sidebar" style={styles.sidebar}>
         <div style={{ ...styles.logo, display: 'flex', gap: 10, alignItems: 'center', marginBottom: 4 }}>
-          <img src="/icon.webp" alt="Jules Claw mark" width="32" height="32" style={{ borderRadius: 8 }} />
-          <span>JULES <span style={{ color: '#5ce1e6' }}>CLAW</span></span>
+          <img src="/icon.webp" alt="Open Web LLM mark" width="32" height="32" style={{ borderRadius: 8 }} />
+          <span>OPEN WEB <span style={{ color: '#5ce1e6' }}>LLM</span></span>
         </div>
         <div style={{ color: '#8d84a8', fontSize: 11, marginBottom: 15, letterSpacing: 0.8 }}>AUTONOMOUS CODING CONTROL PLANE</div>
         <button style={styles.navBtn(view === 'new')} onClick={() => setView('new')}>New Task</button>
@@ -256,13 +256,13 @@ export default function Home() {
         <a href="/lab" style={{ ...styles.navBtn(false), display: 'block', textDecoration: 'none' }}>Developer Lab</a>
         <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Integrations</button>
         <div style={{ marginTop: 'auto', fontSize: 12, color: '#8b949e' }}>
-          Jules API · AGENTS.md · Plan approval
+          Coding API · AGENTS.md · Plan approval
         </div>
       </aside>
 
       <main className="open-jules-main" style={styles.main}>
         <header style={styles.header}>
-          <div style={{ fontWeight: 600 }}>Jules Claw · Coding Operations</div>
+          <div style={{ fontWeight: 600 }}>Open Web LLM · Coding Operations</div>
           <div style={{ fontSize: 13, color: '#8b949e' }}>jules.googleapis.com/v1alpha</div>
         </header>
 
@@ -271,7 +271,7 @@ export default function Home() {
 
           {view === 'new' && (
             <form onSubmit={createSession} style={styles.card}>
-              <h2 style={{ marginTop: 0 }}>New Jules Session</h2>
+              <h2 style={{ marginTop: 0 }}>New Coding Session</h2>
               <div style={{ display: 'grid', gap: 12 }}>
                 <input style={styles.input} placeholder="Title (optional)" value={title} onChange={e => setTitle(e.target.value)} />
                 <textarea style={{ ...styles.input, minHeight: 120 }} placeholder="Describe the task clearly..." value={prompt} onChange={e => setPrompt(e.target.value)} required />
@@ -321,7 +321,7 @@ export default function Home() {
                 {selected.state === 'AWAITING_PLAN_APPROVAL' && (
                   <button style={styles.btn} onClick={approve} disabled={loading}>Approve Plan</button>
                 )}
-                {selected.url && <a href={selected.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>Open in Jules</a>}
+                {selected.url && <a href={selected.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>Open in provider</a>}
               </div>
 
               <div style={styles.card}>
@@ -341,7 +341,7 @@ export default function Home() {
 
               {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a><div style={{ marginTop: 10 }}><button style={styles.btnSecondary} onClick={() => verifyPullRequest(output.pullRequest.url)}>Fetch live GitHub CI evidence</button> <select aria-label="Verification profile" style={{ ...styles.input, width: 140 }} value={verificationProfile} onChange={e => setVerificationProfile(e.target.value)}><option value="syntax">JS syntax</option><option value="node-tests">Node tests</option></select> <button style={styles.btnSecondary} onClick={() => enqueueVerification(output.pullRequest.url)}>Queue isolated check</button></div>{prEvidence[output.pullRequest.url]?.loading && <p>Checking GitHub…</p>}{prEvidence[output.pullRequest.url]?.error && <p style={{ color: '#f87171' }}>{prEvidence[output.pullRequest.url].error}</p>}{prEvidence[output.pullRequest.url]?.sha && <div style={{ marginTop: 8, fontSize: 12 }}><div>PR head: {prEvidence[output.pullRequest.url].sha.slice(0, 12)}</div><div>Combined status: {prEvidence[output.pullRequest.url].status}</div>{prEvidence[output.pullRequest.url].checks.map(c => <div key={c.id} style={{ marginTop: 6 }}>{c.name}: {c.conclusion || c.status} — <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>GitHub evidence</a></div>)}</div>}</div>)}
               <form onSubmit={sendMessage} style={styles.card}>
-                <textarea style={{ ...styles.input, minHeight: 60 }} placeholder="Send message / feedback to Jules..." value={msg} onChange={e => setMsg(e.target.value)} />
+                <textarea style={{ ...styles.input, minHeight: 60 }} placeholder="Send message / feedback to coding provider..." value={msg} onChange={e => setMsg(e.target.value)} />
                 <button type="submit" style={{ ...styles.btn, marginTop: 8 }} disabled={loading}>Send</button>
               </form>
             </div>
@@ -356,7 +356,7 @@ export default function Home() {
                   <div style={{ fontSize: 13, color: '#8b949e' }}>{s.name}</div>
                 </div>
               ))}
-              {!sources.length && <div style={styles.card}>No sources. Connect GitHub in Jules web app first.</div>}
+              {!sources.length && <div style={styles.card}>No sources. Connect GitHub in the coding provider first.</div>}
             </div>
           )}
 
@@ -395,7 +395,7 @@ export default function Home() {
                 {job.stderr && <pre style={{ ...styles.mono, maxHeight: 160, overflow: 'auto', color: '#f87171' }}>{job.stderr}</pre>}
                 {['queued','running'].includes(job.status) && <button style={styles.btnSecondary} onClick={() => cancelVerification(job.id)}>Request cancellation</button>}
               </div>)}
-              {!verificationJobs.length && <div style={styles.card}>No verification jobs recorded. Open a Jules-generated PR to queue a check.</div>}
+              {!verificationJobs.length && <div style={styles.card}>No verification jobs recorded. Open a coding-provider PR to queue a check.</div>}
             </div>
           )}
 
@@ -428,10 +428,10 @@ export default function Home() {
 
           {view === 'addons' && (
             <div>
-              <h2>Integration readiness</h2><p style={{ color: '#a8a3c0' }}>Only the Google Jules provider is wired to execute coding tasks. All other harnesses remain unavailable until independently integrated and tested.</p>
+              <h2>Integration readiness</h2><p style={{ color: '#a8a3c0' }}>Only the configured coding provider is wired to execute coding tasks. All other harnesses remain unavailable until independently integrated and tested.</p>
               <div style={styles.card}>
                 <h3>Gateway / Router</h3>
-                <p>LiteLLM / Bifrost / Portkey style OpenAI-compatible proxy. Point Jules or local agents at your own router for cost, failover, and free models.</p>
+                <p>LiteLLM / Bifrost / Portkey style OpenAI-compatible proxy. Point coding or local agents at your own router for cost, failover, and free models.</p>
                 <code>POST /api/gateway/chat</code> (stub — wire to LiteLLM)
               </div>
               <div style={styles.card}>
