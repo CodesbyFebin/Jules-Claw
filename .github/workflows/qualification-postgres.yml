@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/qualification-postgres.yml'
       - 'scripts/qualify-postgres.mjs'
+      - 'scripts/qualify-worker-recovery.mjs'
       - 'migrations/**'
       - 'tests/lease-integration.mjs'
       - 'lib/quotas.js'
@@ -100,6 +101,15 @@ jobs:
           policies="$(psql -At -d open_web_llm_qualification_restored -c "SELECT count(*) FROM pg_class WHERE relname IN ('desk_entries','verification_jobs') AND relrowsecurity AND relforcerowsecurity")"
           test "$policies" = 2
           echo "Backup, independent restore, row count, and FORCE RLS: PASS"
+      - name: Actual worker process crash/restart and stale-lease recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          createdb open_web_llm_worker_qualification
+          for migration in migrations/000{2,3,4}_*.sql; do
+            psql -X -v ON_ERROR_STOP=1 -d open_web_llm_worker_qualification -f "$migration"
+          done
+          TEST_WORKER_DATABASE_URL="postgresql://postgres:ci_disposable_not_prod@127.0.0.1:5432/open_web_llm_worker_qualification" node scripts/qualify-worker-recovery.mjs
       - name: Publish evidence summary
         if: always()
         shell: bash
