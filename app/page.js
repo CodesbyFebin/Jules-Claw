@@ -242,13 +242,19 @@ export default function Home() {
   return (
     <div className="open-jules-app" style={styles.app}>
       <aside className="open-jules-sidebar" style={styles.sidebar}>
-        <div style={styles.logo}>OPEN JULES</div>
+        <div style={{ ...styles.logo, display: 'flex', gap: 10, alignItems: 'center', marginBottom: 4 }}>
+          <img src="/icon.webp" alt="Jules Claw mark" width="32" height="32" style={{ borderRadius: 8 }} />
+          <span>JULES <span style={{ color: '#5ce1e6' }}>CLAW</span></span>
+        </div>
+        <div style={{ color: '#8d84a8', fontSize: 11, marginBottom: 15, letterSpacing: 0.8 }}>AUTONOMOUS CODING CONTROL PLANE</div>
         <button style={styles.navBtn(view === 'new')} onClick={() => setView('new')}>New Task</button>
         <button style={styles.navBtn(view === 'sessions')} onClick={() => { setView('sessions'); loadSessions(); }}>Sessions</button>
         <button style={styles.navBtn(view === 'sources')} onClick={() => setView('sources')}>Sources</button>
         <button style={styles.navBtn(view === 'desk')} onClick={() => { setView('desk'); loadDesk(); }}>Desk / Evidence</button>
         <button style={styles.navBtn(view === 'verification')} onClick={() => { setView('verification'); loadVerificationJobs(); }}>Verification Jobs</button>
         <button style={styles.navBtn(view === 'swarm')} onClick={() => setView('swarm')}>Advisory Swarm</button>
+        <a href="/lab" style={{ ...styles.navBtn(false), display: 'block', textDecoration: 'none' }}>Developer Lab</a>
+        <a href="/claw" style={{ ...styles.navBtn(false), display: 'block', textDecoration: 'none' }}>Claw Operations</a>
         <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Integrations</button>
         <div style={{ marginTop: 'auto', fontSize: 12, color: '#8b949e' }}>
           Jules API · AGENTS.md · Plan approval
@@ -257,7 +263,7 @@ export default function Home() {
 
       <main className="open-jules-main" style={styles.main}>
         <header style={styles.header}>
-          <div style={{ fontWeight: 600 }}>Asynchronous Coding Agent</div>
+          <div style={{ fontWeight: 600 }}>Jules Claw · Coding Operations</div>
           <div style={{ fontSize: 13, color: '#8b949e' }}>jules.googleapis.com/v1alpha</div>
         </header>
 
