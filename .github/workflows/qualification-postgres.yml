@@ -81,6 +81,14 @@ jobs:
           SQL
       - name: Live RLS, cross-tenant, concurrent and role tests
         run: node scripts/qualify-postgres.mjs
+      - name: Real multi-user session revocation and expiration checks
+        env:
+          DATABASE_URL: postgresql://postgres:ci_disposable_not_prod@127.0.0.1:5432/open_web_llm_qualification
+          JULES_AUTH_ENABLED: 'true'
+          JULES_DEPLOYMENT_MODE: local-single-operator
+          BETTER_AUTH_SECRET: ci-only-better-auth-secret-at-least-32-chars-not-production
+          BETTER_AUTH_URL: http://127.0.0.1:3000
+        run: node scripts/qualify-auth.mjs
       - name: Backup and restore into a second disposable database
         shell: bash
         run: |
