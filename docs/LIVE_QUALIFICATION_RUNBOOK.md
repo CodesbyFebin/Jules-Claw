@@ -17,16 +17,16 @@ File: `.github/workflows/qualification-postgres.yml`
 3. Apply migration files `0001`–`0007` sequentially.
 4. Create **two independently credentialed**, non-superuser, non-BYPASSRLS roles for app and worker checks.
 5. Exercise FORCE RLS, two-tenant inserts, cross-tenant reads/deletes/writes, cross-tenant job access, missing-tenant-context denial, and concurrent isolation.
-6. Dump using `pg_dump` to a local custom archive, restore into a separate disposable database using `pg_restore`, verify retained records and FORCE RLS.
-7. Publish only a factual GitHub Actions step summary; failure stops promotion.
+6. Run two real Better Auth signup/login sessions through the backend HTTP handler, verify tenant membership independent of forged headers, role authorization, logout revocation, and database-expired session rejection using disposable users.\n7. Dump using `pg_dump` to a local custom archive, restore into a separate disposable database using `pg_restore`, verify retained records and FORCE RLS.
+8. Publish only a factual GitHub Actions step summary; failure stops promotion.
 
-**Scope limitation:** The CI worker role is deliberately *not* granted BYPASSRLS. The production worker, if it requires cross-tenant queue polling, still needs a separately reviewed privilege model and explicit independent authorization tests. The CI tests database boundaries but not complete browser login/session expiration, production retention, backup schedules, or multi-hour workloads.
+**Scope limitation:** The CI worker role is deliberately *not* granted BYPASSRLS. The production worker, if it requires cross-tenant queue polling, still needs a separately reviewed privilege model and explicit independent authorization tests. The CI tests database boundaries but not complete browser/proxy cookie and CSRF tests, production retention, backup schedules, or multi-hour workloads.
 
 ## Independently gated prerequisites
 
 | Gate | Required secure input/environment | Boundaries and exit evidence |
 | --- | --- | --- |
-| Session lifecycle | Disposable Better Auth test identities, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, disposable PostgreSQL backing store, isolated application host | Real cookies, CSRF, revocation, session expiry, replay and two-tenant HTTP negative tests; never expose test accounts publicly |
+| Browser/proxy session E2E | Isolated loopback application host, browser client and disposable credentials | CI covers real backend-handler signup, sessions, role checks, revocation and expiry. Still required: through-proxy browser cookie, CSRF, browser session replay and cross-tenant route tests. |
 | Worker crash recovery | Docker-enabled Linux runner already available for syntax checks; separately configured `WORKER_DATABASE_URL` and scoped job fixtures | Kill worker during a leased job, restart it, require fenced/unknown status without duplicate side effects; observe actual container IDs and DB rows |
 | OpenShell hostile execution | **Separately approved, isolated Linux VM or dedicated host with OpenShell CLI** and no production credentials | Explicit sandbox ID, deny network/filesystem escape, cgroups/capabilities verification, hostile fixtures with captured exit codes; **do not run hostile payloads on GitHub shared runner** |
 | Local model fallback | Reachable sandboxed local inference endpoint (existing internal configuration key) or equivalent loopback model endpoint | Actual token generation and outage/recovery traces; isolated CI hosted VM cannot reach an arbitrary developer's localhost |
