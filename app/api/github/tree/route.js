@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 const budget = new Map();
 export async function GET(request) {
   const p = new URL(request.url).searchParams;
-  const repo = p.get('repo') || 'CodesbyFebin/Open-Jules';
+  const repo = p.get('repo') || 'CodesbyFebin/Jules-Claw';
   const ref = p.get('ref') || 'main';
   if (!permittedRepository(repo) || !safeRef(ref)) return Response.json({ error: 'Repository/ref not permitted' }, { status: 400 });
   const now = Date.now();
