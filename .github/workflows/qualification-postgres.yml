@@ -79,8 +79,12 @@ jobs:
           CREATE ROLE owll_worker_ci LOGIN PASSWORD 'ci_worker_disposable' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
           GRANT CONNECT ON DATABASE open_web_llm_qualification TO owll_app_ci, owll_worker_ci;
           GRANT USAGE ON SCHEMA public TO owll_app_ci, owll_worker_ci;
-          GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO owll_app_ci, owll_worker_ci;
-          GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO owll_app_ci, owll_worker_ci;
+          GRANT SELECT,INSERT,UPDATE,DELETE ON desk_entries TO owll_app_ci;
+          GRANT SELECT,INSERT ON verification_jobs TO owll_app_ci;
+          GRANT SELECT,UPDATE ON verification_jobs TO owll_worker_ci;
+          GRANT SELECT ON desk_entries TO owll_worker_ci;
+          GRANT INSERT ON execution_audit TO owll_app_ci;
+          GRANT USAGE,SELECT ON SEQUENCE execution_audit_id_seq TO owll_app_ci;
           SQL
       - name: Live RLS, cross-tenant, concurrent and role tests
         run: node scripts/qualify-postgres.mjs
