@@ -1,6 +1,6 @@
-# NVIDIA integrations for Jules Claw
+# NVIDIA integrations for Open Web LLM
 
-This is an **opt-in integration foundation**, not a bundled NVIDIA runtime. Jules Claw is independent of NVIDIA and Google. No upstream repository code is vendored into this project.
+This is an **opt-in integration foundation**, not a bundled NVIDIA runtime. Open Web LLM is independent of NVIDIA and other providers. No upstream repository code is vendored into this project.
 
 ## Implemented
 
@@ -10,7 +10,7 @@ This is an **opt-in integration foundation**, not a bundled NVIDIA runtime. Jule
 - Path traversal and symlink-escape protection; subprocess timeout/output caps; fail-closed parsing.
 - A scanner verdict never automatically installs or runs a skill.
 
-This endpoint inherits Jules Claw's single-operator Basic authentication and same-origin mutation check. Do not expose it publicly without stronger identity, job queues, rate limits and tenant isolation.
+This endpoint inherits Open Web LLM's single-operator Basic authentication and same-origin mutation check. Do not expose it publicly without stronger identity, job queues, rate limits and tenant isolation.
 
 ## Operator setup
 
