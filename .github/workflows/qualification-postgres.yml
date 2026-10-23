@@ -1,14 +1,6 @@
 name: Open Web LLM — Disposable PostgreSQL qualification
 on:
   pull_request:
-    paths:
-      - '.github/workflows/qualification-postgres.yml'
-      - 'scripts/qualify-postgres.mjs'
-      - 'scripts/qualify-worker-recovery.mjs'
-      - 'migrations/**'
-      - 'tests/lease-integration.mjs'
-      - 'lib/quotas.js'
-      - 'package-lock.json'
   workflow_dispatch:
 
 permissions:
