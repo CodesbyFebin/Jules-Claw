@@ -25,7 +25,7 @@ export default function SqlLab(){
  }
  return <main style={{background:'#090716',color:'#eee9ff',minHeight:'100vh',padding:26,fontFamily:'system-ui'}}>
   <a href="/lab" style={{color:'#a990ff'}}>← Developer Lab</a><h1>PGlite SQL Lab</h1>
-  <p>Real SQL execution in a browser-local, memory-only database. Tables contain explicit fixtures, never live Jules sessions or a production PostgreSQL database. Restarting the page loses data.</p>
+  <p>Real SQL execution in a browser-local, memory-only database. Tables contain explicit fixtures, never live coding sessions or a production PostgreSQL database. Restarting the page loses data.</p>
   <button disabled={busy||ready} onClick={initialize}>Initialize PGlite</button>
   <p>Try <code>EXPLAIN ANALYZE SELECT * FROM sessions;</code> or a JOIN. SQL here only affects this disposable local database.</p>
   <textarea value={query} rows={5} onChange={e=>setQuery(e.target.value)} style={box} aria-label="SQL query"/>

@@ -1,11 +1,11 @@
-# Open Jules v0.7 integration slice
+# Open Web LLM v0.7 integration slice
 
 ## Implemented
 
 - `GET /api/github/tree?repo=CodesbyFebin/Jules-Claw&ref=main`: server-side GitHub API access; optional `GITHUB_TOKEN`; allowlisted repositories with `GITHUB_ALLOWED_REPOS`; 20 calls per minute **per app instance** (not distributed), one thousand-file response cap. GitHub API limits still apply. The response is live GitHub evidence, not an indexed clone or workspace state.
 - `POST /api/gateway/chat`: OpenAI-compatible gateway configured by `GATEWAY_BASE_URL`, `GATEWAY_API_KEY`, `GATEWAY_MODELS`. Exactly 1–40 string messages; primary model from allowlist; at most three configured attempts. Failover only on 408/429/5xx or transport timeout; 4xx auth/validation errors are final. Successful response carries `_openJules.modelUsed` and per-attempt measured latency/status. No invented tokens or costs; model usage is provider-reported.
 - `/lab`: browser WebWorker execution of single-file trusted JS or TS snippets. Uses TypeScript transpilation (not static typechecking) and a 2.5-second main-thread termination timer. **Not a secure sandbox**: network access is not blocked, malicious code can send requests. Do not paste secrets or execute untrusted code. Use separate Docker verification jobs for PR code.
-- `/sql`: actual PGlite in-memory SQL. Supports native Postgres-compatible joins, filters, INSERT and EXPLAIN ANALYZE; the two tables are **explicitly seeded demo fixtures**. The SQL lab is not connected to production DB or Jules sessions. It loses state on reload.
+- `/sql`: actual PGlite in-memory SQL. Supports native Postgres-compatible joins, filters, INSERT and EXPLAIN ANALYZE; the two tables are **explicitly seeded demo fixtures**. The SQL lab is not connected to production DB or provider sessions. It loses state on reload.
 
 ## Configuration
 

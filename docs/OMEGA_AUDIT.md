@@ -1,4 +1,4 @@
-# Jules Ω ZIP verification — 2026-10-23
+# Open Web LLM uploaded archive verification — 2026-10-23
 
 Source: user-supplied `jules-fullstack-omega.zip`, inspected as source and static HTML; claims below are not live benchmark measurements.
 

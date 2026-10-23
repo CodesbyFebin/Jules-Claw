@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { localAccessPermitted } from './lib/access-mode.mjs';
 
 function equalSecrets(a, b) {
   const left = new TextEncoder().encode(a);
@@ -9,7 +10,10 @@ function equalSecrets(a, b) {
   return difference === 0;
 }
 
-export function middleware(request) {
+export function proxy(request) {
+  if (!localAccessPermitted(process.env, request.nextUrl.hostname)) {
+    return new NextResponse('Jules Claw is local-only until multi-user authentication is installed', { status: 503 });
+  }
   const configured = process.env.OPEN_JULES_PASSWORD;
   if (!configured || configured.length < 16) {
     return new NextResponse('Jules Claw is locked: configure OPEN_JULES_PASSWORD (16+ characters)', { status: 503 });
@@ -28,6 +32,16 @@ export function middleware(request) {
       status: 401,
       headers: { 'WWW-Authenticate': 'Basic realm="Jules Claw", charset="UTF-8"', 'Cache-Control': 'no-store' },
     });
+  }
+  // Provider integrations and shared worker routes are not yet proven safe
+  // for concurrent tenant sessions. Disable them in identity staging rather
+  // than treating a signed-in user as authorized to access global resources.
+  if (process.env.JULES_AUTH_ENABLED === 'true' && request.nextUrl.pathname.startsWith('/api/')) {
+    const path = request.nextUrl.pathname;
+    const approved = path.startsWith('/api/auth/') || path === '/api/desk' ||
+      path === '/api/memory' || path === '/api/verification' ||
+      /^\/api\/verification\/[0-9a-f-]{36}$/.test(path);
+    if (!approved) return NextResponse.json({ error: 'Integration unavailable until tenant qualification' }, { status: 503 });
   }
   if (request.nextUrl.pathname.startsWith('/api/') && !['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
     const origin = request.headers.get('origin');

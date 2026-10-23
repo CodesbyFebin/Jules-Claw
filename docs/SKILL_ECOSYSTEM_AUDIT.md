@@ -1,4 +1,4 @@
-# Jules Claw skill ecosystem audit — October 2026
+# Open Web LLM skill ecosystem audit — October 2026
 
 This is a **source-selection and safety integration**, not a mass clone or deployment of third-party software. Metadata was checked against the GitHub repository APIs on 2026-10-23. The catalog is in `data/skill-sources.json`. A license identifier returned by GitHub is *not* a substitute for reviewing the license and every dependency.
 
@@ -48,4 +48,4 @@ Current implementation covers only the **metadata and heuristic preflight** port
 {"repository":"openclaw/agent-skills","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","path":"skills/review/SKILL.md","license":"MIT","content":"# Review\nInspect code."}
 ```
 
-A response with `decision: requires_human_review` is never an approval or installation confirmation. The SHA-256 digest hashes the caller-supplied text; Jules Claw does **not** independently fetch or attest the upstream GitHub blob.
+A response with `decision: requires_human_review` is never an approval or installation confirmation. The SHA-256 digest hashes the caller-supplied text; Open Web LLM does **not** independently fetch or attest the upstream GitHub blob.

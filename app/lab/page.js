@@ -21,7 +21,7 @@ function executeTrustedSnippet(js, timeout=2500) {
 }
 
 export default function Lab() {
-  const [code,setCode]=useState("const message: string = 'Open Jules';\nconsole.log(message);");
+  const [code,setCode]=useState("const message: string = 'Open Web LLM';\nconsole.log(message);");
   const [result,setResult]=useState('No execution performed.');
   const [busy,setBusy]=useState(false);
   const [repo,setRepo]=useState('CodesbyFebin/Jules-Claw');
@@ -50,7 +50,7 @@ export default function Lab() {
     catch(e){setGatewayResult('Gateway unavailable: '+e.message);}
   }
   return <main style={{ minHeight:'100vh',background:'#090716',color:'#f2effb',padding:24,fontFamily:'system-ui,sans-serif' }}>
-    <a href="/" style={{color:'#a990ff'}}>← Open Jules Dashboard</a>
+    <a href="/" style={{color:'#a990ff'}}>← Open Web LLM Dashboard</a>
     <h1>Developer Lab <small style={{fontSize:14,color:'#9b7fff'}}>measured results only</small></h1>
     <section style={card}>
       <h2>JS/TS Browser Worker</h2>

@@ -5,8 +5,11 @@ import { mkdtemp, rm, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error('DATABASE_URL required');
+const url = process.env.WORKER_DATABASE_URL || (process.env.JULES_AUTH_ENABLED === 'true' ? null : process.env.DATABASE_URL);
+if (!url) throw new Error('WORKER_DATABASE_URL required when multi-user identity is enabled');
+if (process.env.JULES_AUTH_ENABLED === 'true' && url === process.env.DATABASE_URL) {
+  throw new Error('Worker requires isolated database credentials, not the web login');
+}
 const pool = new pg.Pool({ connectionString: url, max: 2 });
 const image = process.env.VERIFIER_IMAGE || 'open-jules-verifier:local';
 const pollMs = 3000;

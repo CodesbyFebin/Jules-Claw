@@ -1,22 +1,22 @@
-# Jules Claw — Brand and product scope
+# Open Web LLM — Brand and product scope
 
-**Name:** Jules Claw  
+**Name:** Open Web LLM
 **Tagline:** Plan. Code. Verify. Ship.  
 **Category:** Autonomous coding control plane  
 **Creator:** CodesbyFebin  
-**Theme:** dark violet terminal workspace with cyan secondary accents and the supplied Jules Claw favicon.
+**Theme:** dark violet terminal workspace with cyan secondary accents. Replace legacy-branded iconography before publication.
 
 ## Short description
 
-Jules Claw coordinates coding tasks with real Google Jules sessions, explicit plan approval, repository and pull-request evidence, isolated verification jobs, and optional configured model reviews.
+Open Web LLM coordinates coding tasks through configured provider sessions, explicit plan approval, repository and pull-request evidence, isolated verification jobs, and optional configured model reviews.
 
 ## Product language
 
-- Use **Jules Claw** for this app's navigation, titles, documentation and marketing.
-- Use **Google Jules** when identifying the external coding service and its API.
+- Use **Open Web LLM** for navigation, titles, documentation and marketing.
+- Refer to external coding services as **configured coding providers** in user-facing copy.
 - Describe real activity as *observed* or *measured* only when backed by API or worker results.
 - Do **not** describe UI-only swarms, unlimited tokens, benchmark superiority, SMT proofs or native builds as delivered.
-- Do **not** imply sponsorship or official affiliation with Google or Google Jules.
+- Do **not** imply sponsorship or official affiliation with third-party providers.
 
 ## Compatibility
 

@@ -1,18 +1,17 @@
-# Jules Claw
-<img width="2172" height="724" alt="Jules Claw_ Cybernetic Coding Control Plane" src="https://github.com/user-attachments/assets/02ed6231-0f45-4308-b521-9ea8a9b4e70c" />
+# Open Web LLM
 
-**Jules Claw — Autonomous Coding Control Plane**  
+**Open Web LLM — Local-First AI Control Plane**
 *Plan. Code. Verify. Ship.*
 
-Jules Claw by **CodesbyFebin** is a single-operator workspace for orchestrating **real Google Jules** coding sessions, reviewing plans and changes, observing pull requests, and recording verification evidence. The brand refers to this independent integration product; it is **not** a claim to be Google's official Jules service.
+Open Web LLM by **CodesbyFebin** is a single-operator workspace for coordinating configured coding-provider sessions, reviewing plans and changes, observing pull requests, and recording verification evidence. It is an independent integration product, not an official service of any model or coding provider.
 
-> **Product identity:** Jules Claw  
-> **Repository:** [`CodesbyFebin/Jules-Claw`](https://github.com/CodesbyFebin/Jules-Claw) (formerly `CodesbyFebin/Open-Jules`)  
+> **Product identity:** Open Web LLM
+> **Source repository:** [CodesbyFebin source](https://github.com/CodesbyFebin/Jules-Claw) (historical repository URL; not the public product name)
 > **Existing API/environment namespaces:** unchanged to avoid breaking deployments.
 
 ## v0.2 preview
 
-- Create and monitor real Jules sessions; approve plans and send feedback
+- Create and monitor configured coding-provider sessions; approve plans and send feedback
 - Connected sources, paginated sessions and activity history
 - Display Jules-generated patch artifacts and pull-request output links
 - **Fail-closed HTTP Basic authentication** across UI and API
@@ -62,7 +61,7 @@ When Jules outputs a GitHub pull request URL, click **Fetch live GitHub CI evide
 
 The app does not infer success from an absent check run or an LLM message.
 
-## Jules Ω source audit
+## Uploaded agent archive source audit
 
 The additional Omega archive includes visual layout concepts but not independently verified agent execution. Its fixed model metrics, timed benchmark results, fake test-success strings and prefilled swarm state were excluded. See [`docs/OMEGA_AUDIT.md`](docs/OMEGA_AUDIT.md).
 
@@ -103,4 +102,4 @@ The [NVIDIA integration](docs/NVIDIA_INTEGRATIONS.md) adds an authenticated, sta
 
 ## Verification limitations
 
-GitHub PR check evidence explicitly reports when GitHub returns more check runs than the first page, so an incomplete list cannot be mistaken for complete CI coverage. Live Jules, model gateway, Docker worker, NVIDIA scanner, and native-device flows require separately configured credentials, executors or devices. Passing repository CI does not verify those external systems.
+GitHub PR check evidence explicitly reports when GitHub returns more check runs than the first page, so an incomplete list cannot be mistaken for complete CI coverage. Live coding-provider, model gateway, Docker worker, NVIDIA scanner, and native-device flows require separately configured credentials, executors or devices. Passing repository CI does not verify those external systems.
