@@ -12,11 +12,11 @@ function equalSecrets(a, b) {
 
 export function proxy(request) {
   if (!localAccessPermitted(process.env, request.nextUrl.hostname)) {
-    return new NextResponse('Jules Claw is local-only until multi-user authentication is installed', { status: 503 });
+    return new NextResponse('Open Web LLM is local-only until multi-user authentication is installed', { status: 503 });
   }
   const configured = process.env.OPEN_JULES_PASSWORD;
   if (!configured || configured.length < 16) {
-    return new NextResponse('Jules Claw is locked: configure OPEN_JULES_PASSWORD (16+ characters)', { status: 503 });
+    return new NextResponse('Open Web LLM is locked: configure OPEN_JULES_PASSWORD (16+ characters)', { status: 503 });
   }
   const header = request.headers.get('authorization') || '';
   let valid = false;
@@ -30,7 +30,7 @@ export function proxy(request) {
   if (!valid) {
     return new NextResponse('Authentication required', {
       status: 401,
-      headers: { 'WWW-Authenticate': 'Basic realm="Jules Claw", charset="UTF-8"', 'Cache-Control': 'no-store' },
+      headers: { 'WWW-Authenticate': 'Basic realm="Open Web LLM", charset="UTF-8"', 'Cache-Control': 'no-store' },
     });
   }
   // Provider integrations and shared worker routes are not yet proven safe
