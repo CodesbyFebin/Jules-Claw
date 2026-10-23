@@ -7,16 +7,17 @@
     "build": "next build",
     "start": "next start",
     "test": "node --test tests/*.test.mjs",
+    "benchmark": "node scripts/benchmark.mjs",
     "worker:verify": "node worker/verifier.mjs",
     "test:leases": "node tests/lease-integration.mjs",
     "check:worker": "node --check worker/verifier.mjs && node --check worker/syntax-check.mjs && node --check worker/node-tests.mjs"
   },
   "dependencies": {
-    "next": "^14.2.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@electric-sql/pglite": "^0.3.7",
+    "next": "16.4.3",
     "pg": "^8.16.3",
-    "typescript": "^5.6.3",
-    "@electric-sql/pglite": "^0.3.7"
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "typescript": "^5.6.3"
   }
 }
