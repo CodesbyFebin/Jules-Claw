@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 const styles = {
   app: { display: 'flex', height: '100vh', overflow: 'hidden' },
-  sidebar: { width: 260, background: '#010409', borderRight: '1px solid #21262d', padding: 16, display: 'flex', flexDirection: 'column', gap: 8 },
-  logo: { color: '#00ff00', fontFamily: 'monospace', fontSize: 18, fontWeight: 700, marginBottom: 16 },
+  sidebar: { width: 260, background: '#0a0818', borderRight: '1px solid #21262d', padding: 16, display: 'flex', flexDirection: 'column', gap: 8 },
+  logo: { color: '#9b7fff', fontFamily: 'monospace', fontSize: 18, fontWeight: 700, marginBottom: 16 },
   navBtn: (active) => ({
     background: active ? '#161b22' : 'transparent',
     color: '#e6edf3',
@@ -16,12 +16,12 @@ const styles = {
     cursor: 'pointer',
     fontSize: 14,
   }),
-  main: { flex: 1, display: 'flex', flexDirection: 'column', background: '#0d1117' },
+  main: { flex: 1, display: 'flex', flexDirection: 'column', background: '#0f0c22' },
   header: { padding: '12px 20px', borderBottom: '1px solid #21262d', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   content: { flex: 1, overflow: 'auto', padding: 20 },
-  card: { background: '#161b22', border: '1px solid #30363d', borderRadius: 8, padding: 16, marginBottom: 12 },
+  card: { background: '#15112e', border: '1px solid #30363d', borderRadius: 8, padding: 16, marginBottom: 12 },
   input: { width: '100%', background: '#0d1117', border: '1px solid #30363d', color: '#e6edf3', padding: 10, borderRadius: 6, fontFamily: 'inherit' },
-  btn: { background: '#238636', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 },
+  btn: { background: '#7c5cfc', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontWeight: 600 },
   btnSecondary: { background: '#21262d', color: '#e6edf3', border: '1px solid #30363d', padding: '8px 16px', borderRadius: 6, cursor: 'pointer' },
   state: (s) => ({
     display: 'inline-block',
@@ -48,11 +48,14 @@ export default function Home() {
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [nextPageToken, setNextPageToken] = useState('');
+  const [activityNextPageToken, setActivityNextPageToken] = useState('');
 
   const loadSources = useCallback(async () => {
     try {
       const r = await fetch('/api/sources');
       const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unable to load sources');
       setSources(d.sources || []);
     } catch (e) { setError(e.message); }
   }, []);
@@ -61,19 +64,24 @@ export default function Home() {
     try {
       const r = await fetch('/api/sessions');
       const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unable to load sessions');
       setSessions(d.sessions || []);
+      setNextPageToken(d.nextPageToken || '');
     } catch (e) { setError(e.message); }
   }, []);
 
   const loadSession = useCallback(async (id) => {
+    if (!id) return;
     setLoading(true);
     try {
       const [s, a] = await Promise.all([
-        fetch(`/api/sessions/${id}`).then(r => r.json()),
-        fetch(`/api/sessions/${id}/activities`).then(r => r.json()),
+        fetch(`/api/sessions/${encodeURIComponent(String(id).split('/').pop())}`).then(r => r.json()),
+        fetch(`/api/sessions/${encodeURIComponent(String(id).split('/').pop())}/activities`).then(r => r.json()),
       ]);
+      if (s.error || a.error) throw new Error(s.error || a.error);
       setSelected(s);
       setActivities(a.activities || []);
+      setActivityNextPageToken(a.nextPageToken || '');
     } catch (e) { setError(e.message); }
     setLoading(false);
   }, []);
@@ -81,10 +89,10 @@ export default function Home() {
   useEffect(() => { loadSources(); loadSessions(); }, [loadSources, loadSessions]);
 
   useEffect(() => {
-    if (!selected?.id) return;
-    const t = setInterval(() => loadSession(selected.id), 4000);
+    if (!selected?.name || ['COMPLETED', 'FAILED'].includes(selected.state)) return;
+    const t = setInterval(() => { if (document.visibilityState === 'visible') loadSession(selected.name); }, 5000);
     return () => clearInterval(t);
-  }, [selected?.id, loadSession]);
+  }, [selected?.name, selected?.state, loadSession]);
 
   async function createSession(e) {
     e.preventDefault();
@@ -102,28 +110,28 @@ export default function Home() {
       setTitle('');
       await loadSessions();
       setView('sessions');
-      if (d.id) loadSession(d.id);
+      if (d.name) loadSession(d.name);
     } catch (e) { setError(e.message); }
     setLoading(false);
   }
 
   async function approve() {
-    if (!selected?.id) return;
+    if (!selected?.name) return;
     setLoading(true);
     try {
-      const r = await fetch(`/api/sessions/${selected.id}/approve`, { method: 'POST' });
+      const r = await fetch(`/api/sessions/${encodeURIComponent(selected.name?.split('/').pop() || selected.id)}/approve`, { method: 'POST' });
       if (!r.ok) throw new Error((await r.json()).error);
-      await loadSession(selected.id);
+      await loadSession(selected.name);
     } catch (e) { setError(e.message); }
     setLoading(false);
   }
 
   async function sendMessage(e) {
     e.preventDefault();
-    if (!selected?.id || !msg) return;
+    if (!selected?.name || !msg.trim()) return;
     setLoading(true);
     try {
-      const r = await fetch(`/api/sessions/${selected.id}/message`, {
+      const r = await fetch(`/api/sessions/${encodeURIComponent(selected.name?.split('/').pop() || selected.id)}/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: msg }),
@@ -184,7 +192,7 @@ export default function Home() {
                 <button style={styles.btnSecondary} onClick={loadSessions}>Refresh</button>
               </div>
               {sessions.map(s => (
-                <div key={s.id || s.name} style={{ ...styles.card, cursor: 'pointer' }} onClick={() => { setSelected(s); loadSession(s.id || s.name?.split('/').pop()); setView('detail'); }}>
+                <div key={s.id || s.name} style={{ ...styles.card, cursor: 'pointer' }} onClick={() => { setSelected(s); loadSession(s.name); setView('detail'); }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <strong>{s.title || s.prompt?.slice(0, 60) || 'Untitled'}</strong>
                     <span style={styles.state(s.state)}>{s.state}</span>
@@ -193,6 +201,7 @@ export default function Home() {
                 </div>
               ))}
               {!sessions.length && <div style={styles.card}>No sessions yet.</div>}
+              {nextPageToken && <button style={styles.btnSecondary} onClick={async () => { try { const r = await fetch(`/api/sessions?pageToken=${encodeURIComponent(nextPageToken)}`); const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Unable to load more sessions'); setSessions(v => [...v, ...(d.sessions || [])]); setNextPageToken(d.nextPageToken || ''); } catch (e) { setError(e.message); } }}>Load more sessions</button>}
             </div>
           )}
 
@@ -217,14 +226,16 @@ export default function Home() {
                   <div key={i} style={{ borderTop: '1px solid #30363d', padding: '8px 0' }}>
                     <div style={{ fontSize: 12, color: '#8b949e' }}>{a.originator} · {a.createTime}</div>
                     <div>{a.description}</div>
-                    {a.artifacts?.map((art, j) => art.changeSet?.gitPatch && (
+                    {a.artifacts?.map((art, j) => art.changeSet?.gitPatch?.unidiffPatch && (
                       <pre key={j} style={{ ...styles.mono, background: '#010409', padding: 8, overflow: 'auto', maxHeight: 200 }}>{art.changeSet.gitPatch.unidiffPatch}</pre>
                     ))}
                   </div>
                 ))}
-                {!activities.length && <div>No activities yet.</div>}
+                {activityNextPageToken && <button style={styles.btnSecondary} onClick={async () => { try { const id = selected.name.split('/').pop(); const r = await fetch(`/api/sessions/${encodeURIComponent(id)}/activities?pageToken=${encodeURIComponent(activityNextPageToken)}`); const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Unable to load activities'); setActivities(v => [...v, ...(d.activities || [])]); setActivityNextPageToken(d.nextPageToken || ''); } catch (e) { setError(e.message); } }}>Load older activities</button>}
+                {!activities.length && <div>No activities yet.</div>}}
               </div>
 
+              {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a></div>)}
               <form onSubmit={sendMessage} style={styles.card}>
                 <textarea style={{ ...styles.input, minHeight: 60 }} placeholder="Send message / feedback to Jules..." value={msg} onChange={e => setMsg(e.target.value)} />
                 <button type="submit" style={{ ...styles.btn, marginTop: 8 }} disabled={loading}>Send</button>

@@ -1,20 +1,10 @@
-const BASE = 'https://jules.googleapis.com/v1alpha';
+import { jules, sessionId, failure } from '../../../../../lib/jules';
 
-function getKey() {
-  const key = process.env.JULES_API_KEY;
-  if (!key) throw new Error('JULES_API_KEY is not set');
-  return key;
-}
-
-export async function GET(_req, { params }) {
+export async function GET(request, { params }) {
   try {
-    const res = await fetch(`${BASE}/sessions/${params.id}/activities?pageSize=50`, {
-      headers: { 'x-goog-api-key': getKey() },
-    });
-    const data = await res.json();
-    if (!res.ok) return Response.json(data, { status: res.status });
-    return Response.json(data);
-  } catch (e) {
-    return Response.json({ error: e.message }, { status: 500 });
-  }
+    const q = new URLSearchParams({ pageSize: '50' });
+    const token = new URL(request.url).searchParams.get('pageToken');
+    if (token) q.set('pageToken', token);
+    return Response.json(await jules('/sessions/' + sessionId(params.id) + '/activities?' + q));
+  } catch (e) { return failure(e); }
 }

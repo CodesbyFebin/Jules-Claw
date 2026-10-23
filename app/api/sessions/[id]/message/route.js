@@ -1,28 +1,11 @@
-const BASE = 'https://jules.googleapis.com/v1alpha';
+import { jules, sessionId, failure } from '../../../../../lib/jules';
 
-function getKey() {
-  const key = process.env.JULES_API_KEY;
-  if (!key) throw new Error('JULES_API_KEY is not set');
-  return key;
-}
-
-export async function POST(req, { params }) {
+export async function POST(request, { params }) {
   try {
-    const body = await req.json();
-    const res = await fetch(`${BASE}/sessions/${params.id}:sendMessage`, {
-      method: 'POST',
-      headers: {
-        'x-goog-api-key': getKey(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt: body.prompt }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      return Response.json({ error: text }, { status: res.status });
-    }
+    const id = sessionId(params.id);
+    const body = await request.json();
+    if (typeof body.prompt !== 'string' || !body.prompt.trim() || body.prompt.length > 20000) return Response.json({ error: 'A message of 1–20000 characters is required' }, { status: 400 });
+    await jules('/sessions/' + id + ':sendMessage', { method: 'POST', body: JSON.stringify({ prompt: body.prompt.trim() }) });
     return Response.json({ ok: true });
-  } catch (e) {
-    return Response.json({ error: e.message }, { status: 500 });
-  }
+  } catch (e) { return failure(e); }
 }
