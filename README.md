@@ -72,3 +72,11 @@ The verifier accepts only two fixed profiles: `syntax` (checks JavaScript syntax
 The worker retrieves **public GitHub repositories only**, runs source code inside a Docker container with network disabled, read-only source mount, dropped capabilities, no-new-privileges, PID/CPU/memory/time limits, and nonroot UID. It never accepts arbitrary shell commands from the browser. Node tests requiring uninstalled dependencies may fail; this is reported as a failure rather than a pass. Do not give untrusted users Docker daemon access or deploy this worker on a shared host without additional isolation. The Docker daemon itself remains highly privileged.
 
 The web app does not execute repository code. Stop/cleanup requests are handled by the worker while it is online. If Docker or network access is unavailable, the job reports an infrastructure failure. Full live worker execution still requires a configured Docker host and database.
+
+## v0.5 — Six-role advisory gateway
+
+The **Advisory Swarm** view performs six actual server-side OpenAI-compatible gateway calls only when `SWARM_ENABLED=true`, `GATEWAY_BASE_URL`, `GATEWAY_API_KEY`, and all six `SWARM_MODEL_*` values are configured. One request first gets an architect plan, then a coder proposal, three parallel reviewer assessments (debugger, security, verifier), and a final manager synthesis. It displays real response text, gateway-reported token usage when available, and measured call latency. The button explicitly authorizes gateway usage and possible charges.
+
+These are **advisory model roles**, not six autonomous tool-executing processes; no files are written, no tests are run, and no changes are deployed. Verification evidence must come from the separate isolated worker and GitHub CI. Rate limits and provider usage caps still apply; unlimited tokens are not supported.
+
+CI also builds the Docker verifier image and executes syntax/test smoke fixtures under the restricted container profile. Live long-running worker and configured gateway providers require separate operational credentials and infrastructure.

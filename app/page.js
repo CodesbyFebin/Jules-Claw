@@ -58,6 +58,9 @@ export default function Home() {
   const [prEvidence, setPrEvidence] = useState({});
   const [verificationJobs, setVerificationJobs] = useState([]);
   const [verificationProfile, setVerificationProfile] = useState('syntax');
+  const [swarmPrompt, setSwarmPrompt] = useState('');
+  const [swarmResult, setSwarmResult] = useState(null);
+  const [swarmBusy, setSwarmBusy] = useState(false);
 
   const loadSources = useCallback(async () => {
     try {
@@ -87,6 +90,23 @@ export default function Home() {
       setDeskReady(true);
     } catch (e) { setDeskReady(false); setError(e.message); }
   }, []);
+
+  async function runAdvisorySwarm(e) {
+    e.preventDefault();
+    setError('');
+    setSwarmBusy(true);
+    setSwarmResult(null);
+    try {
+      const r = await fetch('/api/swarm', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: swarmPrompt, confirmCost: true }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Gateway review unavailable');
+      setSwarmResult(d);
+    } catch (e) { setError(e.message); }
+    finally { setSwarmBusy(false); }
+  }
 
   const loadVerificationJobs = useCallback(async () => {
     try {
@@ -228,6 +248,7 @@ export default function Home() {
         <button style={styles.navBtn(view === 'sources')} onClick={() => setView('sources')}>Sources</button>
         <button style={styles.navBtn(view === 'desk')} onClick={() => { setView('desk'); loadDesk(); }}>Desk / Evidence</button>
         <button style={styles.navBtn(view === 'verification')} onClick={() => { setView('verification'); loadVerificationJobs(); }}>Verification Jobs</button>
+        <button style={styles.navBtn(view === 'swarm')} onClick={() => setView('swarm')}>Advisory Swarm</button>
         <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Integrations</button>
         <div style={{ marginTop: 'auto', fontSize: 12, color: '#8b949e' }}>
           Jules API · AGENTS.md · Plan approval
@@ -331,6 +352,25 @@ export default function Home() {
                 </div>
               ))}
               {!sources.length && <div style={styles.card}>No sources. Connect GitHub in Jules web app first.</div>}
+            </div>
+          )}
+
+          {view === 'swarm' && (
+            <div>
+              <h2>Six-role Gateway Review</h2>
+              <p style={{ color: '#a8a3c0', fontSize: 13 }}>Real gateway calls when enabled: Architect → Coder → Debugger / Security / Verifier → Manager. This is analysis only, with no file writes or executed tests. Six provider calls may incur charges.</p>
+              <form onSubmit={runAdvisorySwarm} style={styles.card}>
+                <textarea style={{ ...styles.input, minHeight: 110 }} value={swarmPrompt} onChange={e => setSwarmPrompt(e.target.value)} placeholder="Describe a coding task for six-role advisory review…" required maxLength={3000} />
+                <button style={{ ...styles.btn, marginTop: 12 }} disabled={swarmBusy}>{swarmBusy ? 'Calling configured models…' : 'Run six-role review (uses gateway)'}</button>
+              </form>
+              {swarmResult && <div>
+                <div style={styles.card}>Actual API calls: {swarmResult.actualCalls} · Reported tokens: {swarmResult.reportedTokens ?? 'Unavailable'}<p>{swarmResult.notice}</p></div>
+                {swarmResult.stages.map((stage, i) => <div key={i} style={styles.card}>
+                  <h3>{stage.role} · {stage.model}</h3>
+                  <div style={{ fontSize: 12, color: '#a8a3c0' }}>Measured request latency: {stage.latencyMs}ms</div>
+                  <pre style={{ ...styles.mono, maxHeight: 400, overflow: 'auto' }}>{stage.text}</pre>
+                </div>)}
+              </div>}
             </div>
           )}
 
