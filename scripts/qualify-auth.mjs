@@ -70,4 +70,8 @@ try {
   await pool.query('UPDATE session SET "expiresAt"=now()-interval \'1 minute\' WHERE "userId"=$1', [b.result.user.id]);
   await assert.rejects(requestIdentity(req(fresh.cookie)), e=>e.status === 401);
   process.stdout.write('Better Auth signup, login, forged tenant denial, role checks, signout revocation, database expiry: PASS (backend handler)\n');
-} finally { await pool.end(); }
+} finally {
+  await pool.end();
+  // Better Auth owns a separate pg.Pool. Close it so CI does not idle until timeout.
+  if (typeof auth.options.database?.end === 'function') await auth.options.database.end();
+}
