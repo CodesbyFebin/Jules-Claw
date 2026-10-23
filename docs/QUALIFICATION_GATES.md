@@ -6,6 +6,7 @@ Security > memory > autonomy > cost > usability. A green unit test is not equiva
 | --- | --- | --- | --- |
 | OpenShell execution | Host escape or malicious skill execution | Fixed argv, digest binding, single-read syntax validation, mock tests | OpenShell binary and hardened sandbox policy are unavailable here; validate read-only mounts, no secrets, network deny, CPU/RAM/PID limits and attack fixtures on a real runner. |
 | Multi-user identity/RBAC | One compromised account accesses everyone's data | Hosted access currently fails closed; single-operator loopback Basic only | Implement actual session identity, server-verified roles and tenant-scoped queries across **every** API, job and memory path. Do not enable hosted mode beforehand. |
+| Tenant journal foundation | Journal entries could leak across tenants | `0005_tenant_desk.sql` enables forced RLS and the desk API sets tenant context transaction-locally | Only the single-operator desk path is converted; verified multi-user identities and remaining tables/routes are not integrated. |
 | Concurrent quotas | Burst traffic bypasses per-process counters | 64 concurrent requests through PGlite, 7 admitted/57 rejected with persisted `used=7`; failure rejects | Repeat against external PostgreSQL from separate processes and hosts, including crashes and retries. |
 | Audit durability | Operators cannot reconstruct harmful actions | Local hash-linked execution events and DB audit trigger migration | Apply migration on durable external Postgres; verify backups, retention, tenant attribution and tamper-alerting. |
 | Jules, LLM and workers | Demo mocks conceal provider failures | Unit tests and deterministic subprocess benchmarks | Run live authenticated Jules sessions, outage/recovery local fallback, long-running Docker worker and restart/lease tests. Credentials/services are not present in this runner. |
@@ -24,3 +25,7 @@ Run `npm ci`, `npm test`, `npm run benchmark` from a pinned Git commit, and pres
 5. Qualify provider HTTP error/timeout/cancellation behavior with real Jules and local/remote LLMs; power-cycle long-running Docker workers and verify restart reconciliation.
 
 None of these live gates are marked passed by the local PGlite tests.
+
+## Tenant migration ordering
+
+Deploy tenant-aware desk API and apply `0005_tenant_desk.sql` together during maintenance before allowing journal writes. Existing journal rows migrate to the fixed local operator tenant. Forced RLS requires transaction-local `jules.tenant_id`; connections must never inherit tenant identity from HTTP headers. Remaining data domains require their own migration and cross-tenant adversarial tests before hosted mode can be considered.
