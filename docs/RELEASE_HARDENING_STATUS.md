@@ -13,6 +13,7 @@ This report distinguishes checked functionality from integration plans. **Do not
 | Distributed quota | Atomic `INSERT ... ON CONFLICT ... UPDATE` rate bucket; 30 verification enqueues per hour | Global single-operator quota, not per-user; requires PostgreSQL |
 | OpenShell fixed-profile adapter | Mock-spawn tests cover CLI argv, disabled state, bad sandbox names, failed exit | No live CLI/gateway available; not called by existing worker or UI |
 | Reproducible trusted benchmark | `npm run benchmark` runs local tests in subprocesses with measured elapsed time/exit codes and lockfile hash | No LLM generation, coding-agent ranking, or third-party execution |
+| Pinned skill retrieval | Opt-in, read-only source fetch from the fixed GitHub raw host with explicit full commit pin, allowlisted catalog candidate, response-size and timeout controls | No installation, upstream signature attestation or independent malware scanner |
 
 ## Still blocking public multi-user launch
 
@@ -23,7 +24,7 @@ This report distinguishes checked functionality from integration plans. **Do not
 5. Connect the OpenShell adapter to the existing queued verifier only after isolated storage, policy attestation and cleanup semantics are reviewed.
 6. Build a true coding-agent benchmark with blinded task sets, immutable repos, patch submission, isolated hidden tests, repeat runs, correctness, latency, token and cost reporting.
 7. No desktop/mobile wrappers are shipped in this repository; actual macOS, Windows, Linux, Android and iOS validation remains **NOT_RUN**.
-8. Skill install approvals, remote source attestation, malware scanners, sandbox execution and evidence-gated auto-selection remain separate unimplemented workflows.
+8. Skill install approvals, remote source attestation, malware scanners, sandbox execution and evidence-gated auto-selection remain separate unimplemented workflows. The new pinned fetch route only returns a heuristic review report.
 
 ## Operating notes
 
