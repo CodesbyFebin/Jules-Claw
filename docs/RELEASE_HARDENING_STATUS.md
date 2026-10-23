@@ -18,7 +18,7 @@ This report distinguishes checked functionality from integration plans. **Do not
 ## Still blocking public multi-user launch
 
 1. Replace HTTP Basic with an identity provider, verified sessions, CSRF protections, repository-bound authorization and per-user quotas. The present service **remains single-operator only**.
-2. Run real Jules and gateway calls with provider credentials against production-like accounts; capture redacted evidence.
+2. Run real configured coding-provider and gateway calls against production-like accounts; capture redacted evidence.
 3. Run SkillSpector and OpenShell with installed binaries on policy-controlled hosts, and validate signed execution receipts. No scanner claims a skill is safe.
 4. Complete end-to-end PostgreSQL and multi-hour Docker worker tests, restart/failover recovery, metrics, alerting and cancellation races.
 5. Connect the OpenShell adapter to the existing queued verifier only after isolated storage, policy attestation and cleanup semantics are reviewed.
