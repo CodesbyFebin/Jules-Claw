@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Open Jules — Verified Coding Workspace',
-  description: 'Authenticated Jules coding sessions, review and evidence',
+  title: 'Jules Claw — Autonomous Coding Control Plane',
+  description: 'Jules Claw by CodesbyFebin: manage real Google Jules coding sessions, plans, pull requests, verification jobs and evidence',
 };
 
 export default function RootLayout({ children }) {
