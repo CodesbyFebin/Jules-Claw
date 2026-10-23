@@ -47,3 +47,15 @@ Journal entries are user-authored records and are never labeled as automatically
 `OPEN_JULES_PASSWORD` still protects all API routes. HTTP Basic is intended for one operator behind HTTPS, not public multi-tenancy.
 
 Read [the ZIP audit](docs/ZIP_AUDIT.md) before importing additional pieces. The supplied TanStack app is not directly source-compatible with Next.js and its timed agent and benchmark routines are simulations.
+
+## GitHub CI evidence
+
+When Jules outputs a GitHub pull request URL, click **Fetch live GitHub CI evidence** in its session detail. The server fetches the PR head and check-run data directly from the GitHub REST API, preserving links and recorded statuses. For private repositories configure a server-only `GITHUB_TOKEN` with read access to PRs and checks. Without a token, public GitHub API rate limits apply.
+
+The app does not infer success from an absent check run or an LLM message.
+
+## Jules Ω source audit
+
+The additional Omega archive includes visual layout concepts but not independently verified agent execution. Its fixed model metrics, timed benchmark results, fake test-success strings and prefilled swarm state were excluded. See [`docs/OMEGA_AUDIT.md`](docs/OMEGA_AUDIT.md).
+
+The interface is responsive on mobile browsers. Native Android, macOS, and Linux clients are not included.

@@ -1,0 +1,14 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; min-width: 320px; }
+button, input, textarea, select { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #9b7fff;
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .open-jules-app { flex-direction: column !important; height: 100dvh !important; }
+  .open-jules-sidebar { width: 100% !important; flex-direction: row !important; gap: 6px !important; padding: 8px !important; overflow-x: auto; flex-shrink: 0; }
+  .open-jules-sidebar > div:first-child, .open-jules-sidebar > div:last-child { display: none !important; }
+  .open-jules-sidebar button { white-space: nowrap; flex-shrink: 0; }
+  .open-jules-main { min-height: 0; }
+}

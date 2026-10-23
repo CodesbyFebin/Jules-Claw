@@ -55,6 +55,7 @@ export default function Home() {
   const [deskDetail, setDeskDetail] = useState('');
   const [deskStatus, setDeskStatus] = useState('note');
   const [deskReady, setDeskReady] = useState(false);
+  const [prEvidence, setPrEvidence] = useState({});
 
   const loadSources = useCallback(async () => {
     try {
@@ -84,6 +85,16 @@ export default function Home() {
       setDeskReady(true);
     } catch (e) { setDeskReady(false); setError(e.message); }
   }, []);
+
+  async function verifyPullRequest(url) {
+    setPrEvidence(v => ({ ...v, [url]: { loading: true } }));
+    try {
+      const r = await fetch('/api/github/evidence?url=' + encodeURIComponent(url));
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unable to fetch PR checks');
+      setPrEvidence(v => ({ ...v, [url]: d }));
+    } catch (e) { setPrEvidence(v => ({ ...v, [url]: { error: e.message } })); }
+  }
 
   async function saveDesk(e) {
     e.preventDefault();
@@ -175,8 +186,8 @@ export default function Home() {
   }
 
   return (
-    <div style={styles.app}>
-      <aside style={styles.sidebar}>
+    <div className="open-jules-app" style={styles.app}>
+      <aside className="open-jules-sidebar" style={styles.sidebar}>
         <div style={styles.logo}>OPEN JULES</div>
         <button style={styles.navBtn(view === 'new')} onClick={() => setView('new')}>New Task</button>
         <button style={styles.navBtn(view === 'sessions')} onClick={() => { setView('sessions'); loadSessions(); }}>Sessions</button>
@@ -188,7 +199,7 @@ export default function Home() {
         </div>
       </aside>
 
-      <main style={styles.main}>
+      <main className="open-jules-main" style={styles.main}>
         <header style={styles.header}>
           <div style={{ fontWeight: 600 }}>Asynchronous Coding Agent</div>
           <div style={{ fontSize: 13, color: '#8b949e' }}>jules.googleapis.com/v1alpha</div>
@@ -267,7 +278,7 @@ export default function Home() {
                 {!activities.length && <div>No activities yet.</div>}
               </div>
 
-              {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a></div>)}
+              {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a><div style={{ marginTop: 10 }}><button style={styles.btnSecondary} onClick={() => verifyPullRequest(output.pullRequest.url)}>Fetch live GitHub CI evidence</button></div>{prEvidence[output.pullRequest.url]?.loading && <p>Checking GitHub…</p>}{prEvidence[output.pullRequest.url]?.error && <p style={{ color: '#f87171' }}>{prEvidence[output.pullRequest.url].error}</p>}{prEvidence[output.pullRequest.url]?.sha && <div style={{ marginTop: 8, fontSize: 12 }}><div>PR head: {prEvidence[output.pullRequest.url].sha.slice(0, 12)}</div><div>Combined status: {prEvidence[output.pullRequest.url].status}</div>{prEvidence[output.pullRequest.url].checks.map(c => <div key={c.id} style={{ marginTop: 6 }}>{c.name}: {c.conclusion || c.status} — <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>GitHub evidence</a></div>)}</div>}</div>)}
               <form onSubmit={sendMessage} style={styles.card}>
                 <textarea style={{ ...styles.input, minHeight: 60 }} placeholder="Send message / feedback to Jules..." value={msg} onChange={e => setMsg(e.target.value)} />
                 <button type="submit" style={{ ...styles.btn, marginTop: 8 }} disabled={loading}>Send</button>
