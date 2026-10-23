@@ -232,7 +232,7 @@ export default function Home() {
                   </div>
                 ))}
                 {activityNextPageToken && <button style={styles.btnSecondary} onClick={async () => { try { const id = selected.name.split('/').pop(); const r = await fetch(`/api/sessions/${encodeURIComponent(id)}/activities?pageToken=${encodeURIComponent(activityNextPageToken)}`); const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Unable to load activities'); setActivities(v => [...v, ...(d.activities || [])]); setActivityNextPageToken(d.nextPageToken || ''); } catch (e) { setError(e.message); } }}>Load older activities</button>}
-                {!activities.length && <div>No activities yet.</div>}}
+                {!activities.length && <div>No activities yet.</div>}
               </div>
 
               {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a></div>)}
