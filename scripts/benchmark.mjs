@@ -1,4 +1,4 @@
-// Deterministic verification benchmark for the trusted Jules Claw source tree.
+// Deterministic verification benchmark for the trusted Open Web LLM source tree.
 // This does NOT score an LLM or claim to run arbitrary generated code safely.
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
@@ -49,7 +49,7 @@ export async function runBenchmark() {
   for (const task of profiles) results.push(await runTask(task));
   const manifest = await readFile(resolve(root, 'package-lock.json'));
   return {
-    schema: 'jules-claw-benchmark.v1',
+    schema: 'open-web-llm-benchmark.v1',
     mode: 'measured_trusted_test_suite',
     runtime: process.version,
     platform: process.platform,
