@@ -1,13 +1,12 @@
-# Jules Claw
-<img width="2172" height="724" alt="Jules Claw_ Cybernetic Coding Control Plane" src="https://github.com/user-attachments/assets/02ed6231-0f45-4308-b521-9ea8a9b4e70c" />
+# Open Web LLM
 
-**Jules Claw — Autonomous Coding Control Plane**  
+**Open Web LLM — Local-First AI Control Plane**
 *Plan. Code. Verify. Ship.*
 
-Jules Claw by **CodesbyFebin** is a single-operator workspace for orchestrating **real Google Jules** coding sessions, reviewing plans and changes, observing pull requests, and recording verification evidence. The brand refers to this independent integration product; it is **not** a claim to be Google's official Jules service.
+Open Web LLM by **CodesbyFebin** is a single-operator workspace for coordinating configured coding-provider sessions, reviewing plans and changes, observing pull requests, and recording verification evidence. It is an independent integration product, not an official service of any model or coding provider.
 
-> **Product identity:** Jules Claw  
-> **Repository:** [`CodesbyFebin/Jules-Claw`](https://github.com/CodesbyFebin/Jules-Claw) (formerly `CodesbyFebin/Open-Jules`)  
+> **Product identity:** Open Web LLM
+> **Source repository:** [CodesbyFebin source](https://github.com/CodesbyFebin/Jules-Claw) (historical repository URL; not the public product name)
 > **Existing API/environment namespaces:** unchanged to avoid breaking deployments.
 
 ## v0.2 preview
