@@ -17,7 +17,8 @@ File: `.github/workflows/qualification-postgres.yml`
 3. Apply migration files `0001`–`0007` sequentially.
 4. Create **two independently credentialed**, non-superuser, non-BYPASSRLS roles for app and worker checks.
 5. Exercise FORCE RLS, two-tenant inserts, cross-tenant reads/deletes/writes, cross-tenant job access, missing-tenant-context denial, and concurrent isolation.
-6. Run two real Better Auth signup/login sessions through the backend HTTP handler, verify tenant membership independent of forged headers, role authorization, logout revocation, and database-expired session rejection using disposable users.\n7. Dump using `pg_dump` to a local custom archive, restore into a separate disposable database using `pg_restore`, verify retained records and FORCE RLS.
+6. Run two real Better Auth signup/login sessions through the backend HTTP handler, verify tenant membership independent of forged headers, role authorization, logout revocation, and database-expired session rejection using disposable users.
+7. Dump using `pg_dump` to a local custom archive, restore into a separate disposable database using `pg_restore`, verify retained records and FORCE RLS.
 8. Publish only a factual GitHub Actions step summary; failure stops promotion.
 
 **Scope limitation:** The CI worker role is deliberately *not* granted BYPASSRLS. The production worker, if it requires cross-tenant queue polling, still needs a separately reviewed privilege model and explicit independent authorization tests. The CI tests database boundaries but not complete browser/proxy cookie and CSRF tests, production retention, backup schedules, or multi-hour workloads.
