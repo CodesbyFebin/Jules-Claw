@@ -54,6 +54,26 @@ jobs:
             psql -X -v ON_ERROR_STOP=1 -d open_web_llm_worker_qualification -f "$migration"
           done
           node scripts/qualify-worker-recovery.mjs
+      - name: Real multi-user authentication and session lifecycle qualification
+        shell: bash
+        env:
+          PGHOST: localhost
+          PGPORT: '5432'
+          PGUSER: postgres
+          PGPASSWORD: ci_test_only
+          DATABASE_URL: postgresql://postgres:ci_test_only@localhost:5432/open_web_llm_qualification
+          QUALIFICATION_DISPOSABLE: I_CONFIRM_DISPOSABLE
+          JULES_AUTH_ENABLED: 'true'
+          JULES_DEPLOYMENT_MODE: local-single-operator
+          BETTER_AUTH_SECRET: ci-only-better-auth-secret-at-least-32-chars-not-production
+          BETTER_AUTH_URL: http://127.0.0.1:3000
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE open_web_llm_qualification'
+          for migration in migrations/000{1,2,3,4,5,6,7}_*.sql; do
+            psql -X -v ON_ERROR_STOP=1 -d open_web_llm_qualification -f "$migration"
+          done
+          node scripts/qualify-auth.mjs
       - name: Run isolated syntax check
         run: docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 --memory 512m --cpus 1 --user 1000:1000 --tmpfs /tmp:rw,noexec,nosuid,size=64m --mount type=bind,source=$PWD/worker/fixtures,target=/work,readonly --workdir /work open-jules-verifier:ci node /opt/verifier/syntax-check.mjs
       - name: Run isolated Node tests
