@@ -1,6 +1,13 @@
-# Open Jules
+# Jules Claw
 
-Authenticated single-operator dashboard for real Google Jules coding sessions.
+**Jules Claw — Autonomous Coding Control Plane**  
+*Plan. Code. Verify. Ship.*
+
+Jules Claw by **CodesbyFebin** is a single-operator workspace for orchestrating **real Google Jules** coding sessions, reviewing plans and changes, observing pull requests, and recording verification evidence. The brand refers to this independent integration product; it is **not** a claim to be Google's official Jules service.
+
+> **Product identity:** Jules Claw  
+> **Repository (unchanged for link compatibility):** `CodesbyFebin/Open-Jules`  
+> **Existing API/environment namespaces:** unchanged to avoid breaking deployments.
 
 ## v0.2 preview
 
