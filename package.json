@@ -9,6 +9,7 @@
     "test": "node --test tests/*.test.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "approval": "node scripts/approve-capability.mjs",
+    "execute:approved": "node scripts/execute-approved.mjs",
     "worker:verify": "node worker/verifier.mjs",
     "test:leases": "node tests/lease-integration.mjs",
     "check:worker": "node --check worker/verifier.mjs && node --check worker/syntax-check.mjs && node --check worker/node-tests.mjs"
