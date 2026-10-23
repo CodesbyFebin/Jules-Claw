@@ -12,6 +12,8 @@ const profiles = Object.freeze([
   { id: 'agent-validation', args: ['--test', 'tests/jules.test.mjs', 'tests/swarm.test.mjs'] },
   { id: 'security-preflight', args: ['--test', 'tests/nvidia-integration.test.mjs', 'tests/skill-supply-chain.test.mjs', 'tests/openshell-adapter.test.mjs'] },
   { id: 'evidence-logic', args: ['--test', 'tests/verification.test.mjs', 'tests/github-evidence.test.mjs', 'tests/quotas.test.mjs'] },
+  { id: 'concurrent-quota', args: ['--test', 'tests/quotas-concurrency.test.mjs'] },
+  { id: 'approval-security', args: ['--test', 'tests/capability-approvals.test.mjs', 'tests/approved-execution.test.mjs', 'tests/access-mode.test.mjs'] },
 ]);
 
 async function runTask(task, timeoutMs = 30000) {
@@ -52,6 +54,7 @@ export async function runBenchmark() {
     runtime: process.version,
     platform: process.platform,
     lockfileSha256: createHash('sha256').update(manifest).digest('hex'),
+    taskManifestSha256: createHash('sha256').update(JSON.stringify(profiles)).digest('hex'),
     results,
     passed: results.every(result => result.passed),
     warning: 'Measures real local test subprocesses only. Does not measure model coding quality, agent autonomy, security proof, or third-party provider speed.',
