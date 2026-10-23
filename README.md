@@ -80,3 +80,11 @@ The **Advisory Swarm** view performs six actual server-side OpenAI-compatible ga
 These are **advisory model roles**, not six autonomous tool-executing processes; no files are written, no tests are run, and no changes are deployed. Verification evidence must come from the separate isolated worker and GitHub CI. Rate limits and provider usage caps still apply; unlimited tokens are not supported.
 
 CI also builds the Docker verifier image and executes syntax/test smoke fixtures under the restricted container profile. Live long-running worker and configured gateway providers require separate operational credentials and infrastructure.
+
+## v0.6 — Crash recovery and ownership fencing
+
+Apply `migrations/0003_worker_leases.sql` **with all older verifier workers stopped**, then deploy the updated worker. Every claimed job has an owner UUID, attempt count, and five-second heartbeat. A worker detects jobs whose heartbeat is older than five minutes, marks them `infra_failure` with an explicit uncertainty message, and attempts to remove the orphan Docker container. Recovery never converts an abandoned job to a pass or automatically retries untrusted code. Final results are accepted only from the owning worker while the job is still running.
+
+The 5-minute threshold is conservative for transient database stalls. Worker heartbeat failures and Docker cleanup errors appear in worker stderr logs; deploy host monitoring for them. Existing jobs left `running` by earlier worker versions are treated as abandoned on first v0.6 recovery. This is an operational fail-safe, **not** a production load-testing attestation.
+
+The attached alternate Omega shell offers UI and harness taxonomy ideas, but its hard-coded latency/model attributes and agent labels are not evidence of real execution and are not imported into the backend.
