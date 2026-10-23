@@ -21,7 +21,7 @@ function executeTrustedSnippet(js, timeout=2500) {
 }
 
 export default function Lab() {
-  const [code,setCode]=useState("const message: string = 'Open Jules';\nconsole.log(message);");
+  const [code,setCode]=useState("const message: string = 'Open Web LLM';\nconsole.log(message);");
   const [result,setResult]=useState('No execution performed.');
   const [busy,setBusy]=useState(false);
   const [repo,setRepo]=useState('CodesbyFebin/Jules-Claw');
