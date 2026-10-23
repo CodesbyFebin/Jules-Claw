@@ -1,0 +1,14 @@
+[
+  {"repository":"openclaw/clawhub","area":"skill discovery","license":"MIT","decision":"reference","reason":"Registry patterns; remote skill code is never auto-installed"},
+  {"repository":"openclaw/clawscan","area":"skill scanning","license":"MIT","decision":"candidate","reason":"Composable scan output; optional external binary pending adapter validation"},
+  {"repository":"openclaw/agent-skills","area":"coding skill packs","license":"MIT","decision":"candidate","reason":"Import only reviewed, commit-pinned individual skills"},
+  {"repository":"AMAP-ML/SkillClaw","area":"skill evaluation","license":"MIT","decision":"reference","reason":"Replay-based evolution ideas need deterministic evidence before adoption"},
+  {"repository":"thClaws/thClaws","area":"agent runtime","license":"Apache-2.0","decision":"reference","reason":"Rust standalone runtime is not a drop-in Next.js integration"},
+  {"repository":"flipped-aurora/gin-vue-admin","area":"RBAC and administration","license":"Apache-2.0","decision":"reference","reason":"Go/Vue admin stack is architecturally separate; do not graft authentication"},
+  {"repository":"prompt-security/clawsec","area":"skill integrity monitoring","license":"AGPL-3.0","decision":"review_license","reason":"AGPL obligations need legal review before distributing integrated code"},
+  {"repository":"limecloud/lime","area":"multi-tool desktop agent","license":"UNKNOWN","decision":"blocked","reason":"No recognized root license in GitHub metadata"},
+  {"repository":"Gk0Wk/ClawGuard","area":"human approval and data loss prevention","license":"UNKNOWN","decision":"blocked","reason":"License and execution policy require review"},
+  {"repository":"ShamyaHaria/clawvault","area":"skill audit pipeline","license":"NOASSERTION","decision":"blocked","reason":"License unclear"},
+  {"repository":"omnimind-ai/OmniBot","area":"Android agent","license":"NOASSERTION","decision":"blocked","reason":"Mobile device permission model differs from Jules Claw"},
+  {"repository":"ClawBio/ClawBio","area":"bioinformatics skills","license":"NOASSERTION","decision":"blocked","reason":"Domain specialization and license review required"}
+]
