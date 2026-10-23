@@ -59,3 +59,16 @@ The app does not infer success from an absent check run or an LLM message.
 The additional Omega archive includes visual layout concepts but not independently verified agent execution. Its fixed model metrics, timed benchmark results, fake test-success strings and prefilled swarm state were excluded. See [`docs/OMEGA_AUDIT.md`](docs/OMEGA_AUDIT.md).
 
 The interface is responsive on mobile browsers. Native Android, macOS, and Linux clients are not included.
+
+## v0.4 — Durable isolated verification
+
+The verifier accepts only two fixed profiles: `syntax` (checks JavaScript syntax, does not execute code) and `node-tests` (executes discovered JS test files). Jobs are queued in PostgreSQL using immutable GitHub PR head SHAs, processed by a separate trusted worker, and displayed with actual stdout/stderr, exit code and status. No job is marked passed without a successful worker execution.
+
+1. Apply `migrations/0001_desk.sql` and `migrations/0002_verification_jobs.sql`.
+2. Build a sandbox image: `docker build -t open-jules-verifier:local ./worker`.
+3. On a **trusted host with Docker**, configure `DATABASE_URL` and run `npm run worker:verify`.
+4. Open a Jules session with a GitHub PR output, choose a verification profile, and click **Queue isolated check**.
+
+The worker retrieves **public GitHub repositories only**, runs source code inside a Docker container with network disabled, read-only source mount, dropped capabilities, no-new-privileges, PID/CPU/memory/time limits, and nonroot UID. It never accepts arbitrary shell commands from the browser. Node tests requiring uninstalled dependencies may fail; this is reported as a failure rather than a pass. Do not give untrusted users Docker daemon access or deploy this worker on a shared host without additional isolation. The Docker daemon itself remains highly privileged.
+
+The web app does not execute repository code. Stop/cleanup requests are handled by the worker while it is online. If Docker or network access is unavailable, the job reports an infrastructure failure. Full live worker execution still requires a configured Docker host and database.

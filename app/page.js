@@ -56,6 +56,8 @@ export default function Home() {
   const [deskStatus, setDeskStatus] = useState('note');
   const [deskReady, setDeskReady] = useState(false);
   const [prEvidence, setPrEvidence] = useState({});
+  const [verificationJobs, setVerificationJobs] = useState([]);
+  const [verificationProfile, setVerificationProfile] = useState('syntax');
 
   const loadSources = useCallback(async () => {
     try {
@@ -85,6 +87,38 @@ export default function Home() {
       setDeskReady(true);
     } catch (e) { setDeskReady(false); setError(e.message); }
   }, []);
+
+  const loadVerificationJobs = useCallback(async () => {
+    try {
+      const r = await fetch('/api/verification');
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unable to retrieve verification jobs');
+      setVerificationJobs(d.jobs || []);
+    } catch (e) { setError(e.message); }
+  }, []);
+
+  async function enqueueVerification(url) {
+    setError('');
+    try {
+      const r = await fetch('/api/verification', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pullRequestUrl: url, profile: verificationProfile }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unable to enqueue verification');
+      await loadVerificationJobs();
+      setView('verification');
+    } catch (e) { setError(e.message); }
+  }
+
+  async function cancelVerification(id) {
+    try {
+      const r = await fetch('/api/verification/' + encodeURIComponent(id), { method: 'DELETE' });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unable to cancel');
+      await loadVerificationJobs();
+    } catch (e) { setError(e.message); }
+  }
 
   async function verifyPullRequest(url) {
     setPrEvidence(v => ({ ...v, [url]: { loading: true } }));
@@ -193,6 +227,7 @@ export default function Home() {
         <button style={styles.navBtn(view === 'sessions')} onClick={() => { setView('sessions'); loadSessions(); }}>Sessions</button>
         <button style={styles.navBtn(view === 'sources')} onClick={() => setView('sources')}>Sources</button>
         <button style={styles.navBtn(view === 'desk')} onClick={() => { setView('desk'); loadDesk(); }}>Desk / Evidence</button>
+        <button style={styles.navBtn(view === 'verification')} onClick={() => { setView('verification'); loadVerificationJobs(); }}>Verification Jobs</button>
         <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Integrations</button>
         <div style={{ marginTop: 'auto', fontSize: 12, color: '#8b949e' }}>
           Jules API · AGENTS.md · Plan approval
@@ -278,7 +313,7 @@ export default function Home() {
                 {!activities.length && <div>No activities yet.</div>}
               </div>
 
-              {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a><div style={{ marginTop: 10 }}><button style={styles.btnSecondary} onClick={() => verifyPullRequest(output.pullRequest.url)}>Fetch live GitHub CI evidence</button></div>{prEvidence[output.pullRequest.url]?.loading && <p>Checking GitHub…</p>}{prEvidence[output.pullRequest.url]?.error && <p style={{ color: '#f87171' }}>{prEvidence[output.pullRequest.url].error}</p>}{prEvidence[output.pullRequest.url]?.sha && <div style={{ marginTop: 8, fontSize: 12 }}><div>PR head: {prEvidence[output.pullRequest.url].sha.slice(0, 12)}</div><div>Combined status: {prEvidence[output.pullRequest.url].status}</div>{prEvidence[output.pullRequest.url].checks.map(c => <div key={c.id} style={{ marginTop: 6 }}>{c.name}: {c.conclusion || c.status} — <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>GitHub evidence</a></div>)}</div>}</div>)}
+              {selected.outputs?.map((output, i) => output.pullRequest?.url && <div key={i} style={styles.card}><h3>Pull request</h3><a href={output.pullRequest.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>{output.pullRequest.title || output.pullRequest.url}</a><div style={{ marginTop: 10 }}><button style={styles.btnSecondary} onClick={() => verifyPullRequest(output.pullRequest.url)}>Fetch live GitHub CI evidence</button> <select aria-label="Verification profile" style={{ ...styles.input, width: 140 }} value={verificationProfile} onChange={e => setVerificationProfile(e.target.value)}><option value="syntax">JS syntax</option><option value="node-tests">Node tests</option></select> <button style={styles.btnSecondary} onClick={() => enqueueVerification(output.pullRequest.url)}>Queue isolated check</button></div>{prEvidence[output.pullRequest.url]?.loading && <p>Checking GitHub…</p>}{prEvidence[output.pullRequest.url]?.error && <p style={{ color: '#f87171' }}>{prEvidence[output.pullRequest.url].error}</p>}{prEvidence[output.pullRequest.url]?.sha && <div style={{ marginTop: 8, fontSize: 12 }}><div>PR head: {prEvidence[output.pullRequest.url].sha.slice(0, 12)}</div><div>Combined status: {prEvidence[output.pullRequest.url].status}</div>{prEvidence[output.pullRequest.url].checks.map(c => <div key={c.id} style={{ marginTop: 6 }}>{c.name}: {c.conclusion || c.status} — <a href={c.url} target="_blank" rel="noreferrer" style={{ color: '#58a6ff' }}>GitHub evidence</a></div>)}</div>}</div>)}
               <form onSubmit={sendMessage} style={styles.card}>
                 <textarea style={{ ...styles.input, minHeight: 60 }} placeholder="Send message / feedback to Jules..." value={msg} onChange={e => setMsg(e.target.value)} />
                 <button type="submit" style={{ ...styles.btn, marginTop: 8 }} disabled={loading}>Send</button>
@@ -296,6 +331,26 @@ export default function Home() {
                 </div>
               ))}
               {!sources.length && <div style={styles.card}>No sources. Connect GitHub in Jules web app first.</div>}
+            </div>
+          )}
+
+          {view === 'verification' && (
+            <div>
+              <h2>Isolated Verification Jobs</h2>
+              <p style={{ color: '#a8a3c0', fontSize: 13 }}>Only results from the separate Docker verifier are shown. Queued jobs stay queued until a worker is online. No simulated passes.</p>
+              <button style={styles.btnSecondary} onClick={loadVerificationJobs}>Refresh job states</button>
+              {verificationJobs.map(job => <div key={job.id} style={{ ...styles.card, marginTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <strong>{job.repo_owner}/{job.repo_name} · {job.profile}</strong>
+                  <span style={styles.state(job.status === 'passed' ? 'COMPLETED' : job.status === 'failed' || job.status === 'infra_failure' ? 'FAILED' : '')}>{job.status}</span>
+                </div>
+                <p style={styles.mono}>{job.commit_sha.slice(0, 12)} · {job.created_at}</p>
+                {job.exit_code !== null && <p>Actual process exit code: {job.exit_code}</p>}
+                {job.stdout && <pre style={{ ...styles.mono, maxHeight: 160, overflow: 'auto' }}>{job.stdout}</pre>}
+                {job.stderr && <pre style={{ ...styles.mono, maxHeight: 160, overflow: 'auto', color: '#f87171' }}>{job.stderr}</pre>}
+                {['queued','running'].includes(job.status) && <button style={styles.btnSecondary} onClick={() => cancelVerification(job.id)}>Request cancellation</button>}
+              </div>)}
+              {!verificationJobs.length && <div style={styles.card}>No verification jobs recorded. Open a Jules-generated PR to queue a check.</div>}
             </div>
           )}
 
