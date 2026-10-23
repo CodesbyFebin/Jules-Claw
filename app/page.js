@@ -249,6 +249,7 @@ export default function Home() {
         <button style={styles.navBtn(view === 'desk')} onClick={() => { setView('desk'); loadDesk(); }}>Desk / Evidence</button>
         <button style={styles.navBtn(view === 'verification')} onClick={() => { setView('verification'); loadVerificationJobs(); }}>Verification Jobs</button>
         <button style={styles.navBtn(view === 'swarm')} onClick={() => setView('swarm')}>Advisory Swarm</button>
+        <a href="/lab" style={{ ...styles.navBtn(false), display: 'block', textDecoration: 'none' }}>Developer Lab</a>
         <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Integrations</button>
         <div style={{ marginTop: 'auto', fontSize: 12, color: '#8b949e' }}>
           Jules API · AGENTS.md · Plan approval
