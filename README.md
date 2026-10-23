@@ -1,4 +1,5 @@
 # Jules Claw
+<img width="2172" height="724" alt="Jules Claw_ Cybernetic Coding Control Plane" src="https://github.com/user-attachments/assets/02ed6231-0f45-4308-b521-9ea8a9b4e70c" />
 
 **Jules Claw — Autonomous Coding Control Plane**  
 *Plan. Code. Verify. Ship.*
