@@ -24,7 +24,7 @@ export default function Lab() {
   const [code,setCode]=useState("const message: string = 'Open Jules';\nconsole.log(message);");
   const [result,setResult]=useState('No execution performed.');
   const [busy,setBusy]=useState(false);
-  const [repo,setRepo]=useState('CodesbyFebin/Open-Jules');
+  const [repo,setRepo]=useState('CodesbyFebin/Jules-Claw');
   const [ref,setRef]=useState('main');
   const [tree,setTree]=useState(null);
   const [gatewayPrompt,setGatewayPrompt]=useState('');

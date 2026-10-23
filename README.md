@@ -7,7 +7,7 @@
 Jules Claw by **CodesbyFebin** is a single-operator workspace for orchestrating **real Google Jules** coding sessions, reviewing plans and changes, observing pull requests, and recording verification evidence. The brand refers to this independent integration product; it is **not** a claim to be Google's official Jules service.
 
 > **Product identity:** Jules Claw  
-> **Repository (unchanged for link compatibility):** `CodesbyFebin/Open-Jules`  
+> **Repository:** [`CodesbyFebin/Jules-Claw`](https://github.com/CodesbyFebin/Jules-Claw) (formerly `CodesbyFebin/Open-Jules`)  
 > **Existing API/environment namespaces:** unchanged to avoid breaking deployments.
 
 ## v0.2 preview
@@ -40,7 +40,7 @@ Jules sources must first be connected through the official Jules web app. `JULES
 
 ## Honest capability boundaries
 
-The project currently delegates coding execution to Google's Jules API. No local agent swarm, benchmark runner, sandbox execution, durable jobs, or memory service is present. The optional gateway is a separate chat-completions proxy; it does not change Jules's internal model routing. An HTML concept mockup may be used as design reference only, not as evidence of live agents or measured benchmarks.
+The project delegates autonomous coding sessions to Google's Jules API. An optional six-role advisory gateway performs genuine model calls but **does not** edit files or run commands. PostgreSQL-backed verification jobs and a separate Docker worker can execute two bounded profiles when configured; they are not built-in OpenShell sandboxes. A browser Developer Lab runs trusted snippets only and its SQL tables are seeded demo fixtures. There is no production multi-user memory service, autonomous 10-agent coding swarm, formal proof pipeline, or measured cross-model benchmark arena. The optional gateway does not control Jules's internal model routing. HTML concept mockups do not establish real capability.
 
 Production multi-user deployment requires account-backed authentication, repository authorization, durable state, security tests, audit logs, and operational rate limits.
 
@@ -72,7 +72,7 @@ The interface is responsive on mobile browsers. Native Android, macOS, and Linux
 
 The verifier accepts only two fixed profiles: `syntax` (checks JavaScript syntax, does not execute code) and `node-tests` (executes discovered JS test files). Jobs are queued in PostgreSQL using immutable GitHub PR head SHAs, processed by a separate trusted worker, and displayed with actual stdout/stderr, exit code and status. No job is marked passed without a successful worker execution.
 
-1. Apply `migrations/0001_desk.sql` and `migrations/0002_verification_jobs.sql`.
+1. Apply `migrations/0001_desk.sql`, `migrations/0002_verification_jobs.sql`, and `migrations/0003_worker_leases.sql` (with old workers stopped).
 2. Build a sandbox image: `docker build -t open-jules-verifier:local ./worker`.
 3. On a **trusted host with Docker**, configure `DATABASE_URL` and run `npm run worker:verify`.
 4. Open a Jules session with a GitHub PR output, choose a verification profile, and click **Queue isolated check**.
@@ -96,3 +96,11 @@ Apply `migrations/0003_worker_leases.sql` **with all older verifier workers stop
 The 5-minute threshold is conservative for transient database stalls. Worker heartbeat failures and Docker cleanup errors appear in worker stderr logs; deploy host monitoring for them. Existing jobs left `running` by earlier worker versions are treated as abandoned on first v0.6 recovery. This is an operational fail-safe, **not** a production load-testing attestation.
 
 The attached alternate Omega shell offers UI and harness taxonomy ideas, but its hard-coded latency/model attributes and agent labels are not evidence of real execution and are not imported into the backend.
+
+## v0.8 — NVIDIA skill preflight (opt-in)
+
+The [NVIDIA integration](docs/NVIDIA_INTEGRATIONS.md) adds an authenticated, static-only SkillSpector adapter. It is **disabled by default**, accepts only skill directories under an operator-configured root, and never installs or executes a skill. OpenShell, NemoClaw and NeMo Agent Toolkit are not yet integrated. This is an independent CodesbyFebin application, not endorsed by NVIDIA.
+
+## Verification limitations
+
+GitHub PR check evidence explicitly reports when GitHub returns more check runs than the first page, so an incomplete list cannot be mistaken for complete CI coverage. Live Jules, model gateway, Docker worker, NVIDIA scanner, and native-device flows require separately configured credentials, executors or devices. Passing repository CI does not verify those external systems.

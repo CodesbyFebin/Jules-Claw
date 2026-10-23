@@ -15,7 +15,7 @@ test('gateway whitelist, bounded chat and deterministic failover chain', () => {
   assert.throws(()=>g.gatewayUrl('http://example.com/v1'));
 });
 test('GitHub repository and ref are constrained', () => {
-  assert.equal(h.permittedRepository('CodesbyFebin/Open-Jules', {}),true);
+  assert.equal(h.permittedRepository('CodesbyFebin/Jules-Claw', {}),true);
   assert.equal(h.permittedRepository('other/private', {}),false);
   assert.equal(h.safeRef('../secret'),false);
   assert.equal(h.safeRef('main'),true);
