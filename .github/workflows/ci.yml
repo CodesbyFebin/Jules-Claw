@@ -38,6 +38,22 @@ jobs:
           OPEN_JULES_PASSWORD: ci-only-password-not-for-deployment
       - name: Build isolated verifier
         run: docker build -t open-jules-verifier:ci ./worker
+      - name: Live worker process crash/restart qualification
+        shell: bash
+        env:
+          PGPASSWORD: ci_test_only
+          PGUSER: postgres
+          PGHOST: localhost
+          PGPORT: '5432'
+          QUALIFICATION_DISPOSABLE: I_CONFIRM_DISPOSABLE
+          TEST_WORKER_DATABASE_URL: postgresql://postgres:ci_test_only@localhost:5432/open_web_llm_worker_qualification
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -d postgres -c 'CREATE DATABASE open_web_llm_worker_qualification'
+          for migration in migrations/000{2,3,4}_*.sql; do
+            psql -X -v ON_ERROR_STOP=1 -d open_web_llm_worker_qualification -f "$migration"
+          done
+          node scripts/qualify-worker-recovery.mjs
       - name: Run isolated syntax check
         run: docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 --memory 512m --cpus 1 --user 1000:1000 --tmpfs /tmp:rw,noexec,nosuid,size=64m --mount type=bind,source=$PWD/worker/fixtures,target=/work,readonly --workdir /work open-jules-verifier:ci node /opt/verifier/syntax-check.mjs
       - name: Run isolated Node tests
