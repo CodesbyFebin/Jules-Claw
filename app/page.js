@@ -50,6 +50,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [nextPageToken, setNextPageToken] = useState('');
   const [activityNextPageToken, setActivityNextPageToken] = useState('');
+  const [deskItems, setDeskItems] = useState([]);
+  const [deskTitle, setDeskTitle] = useState('');
+  const [deskDetail, setDeskDetail] = useState('');
+  const [deskStatus, setDeskStatus] = useState('note');
+  const [deskReady, setDeskReady] = useState(false);
 
   const loadSources = useCallback(async () => {
     try {
@@ -69,6 +74,32 @@ export default function Home() {
       setNextPageToken(d.nextPageToken || '');
     } catch (e) { setError(e.message); }
   }, []);
+
+  const loadDesk = useCallback(async () => {
+    try {
+      const r = await fetch('/api/desk');
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Desk unavailable');
+      setDeskItems(d.items || []);
+      setDeskReady(true);
+    } catch (e) { setDeskReady(false); setError(e.message); }
+  }, []);
+
+  async function saveDesk(e) {
+    e.preventDefault();
+    setError('');
+    try {
+      const r = await fetch('/api/desk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: deskTitle, detail: deskDetail, status: deskStatus }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Could not save desk entry');
+      setDeskTitle('');
+      setDeskDetail('');
+      await loadDesk();
+    } catch (e) { setError(e.message); }
+  }
 
   const loadSession = useCallback(async (id) => {
     if (!id) return;
@@ -150,7 +181,8 @@ export default function Home() {
         <button style={styles.navBtn(view === 'new')} onClick={() => setView('new')}>New Task</button>
         <button style={styles.navBtn(view === 'sessions')} onClick={() => { setView('sessions'); loadSessions(); }}>Sessions</button>
         <button style={styles.navBtn(view === 'sources')} onClick={() => setView('sources')}>Sources</button>
-        <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Addons</button>
+        <button style={styles.navBtn(view === 'desk')} onClick={() => { setView('desk'); loadDesk(); }}>Desk / Evidence</button>
+        <button style={styles.navBtn(view === 'addons')} onClick={() => setView('addons')}>Integrations</button>
         <div style={{ marginTop: 'auto', fontSize: 12, color: '#8b949e' }}>
           Jules API · AGENTS.md · Plan approval
         </div>
@@ -256,9 +288,36 @@ export default function Home() {
             </div>
           )}
 
+          {view === 'desk' && (
+            <div>
+              <h2>Desk / Evidence Journal</h2>
+              <p style={{ color: '#a8a3c0', fontSize: 13 }}>Persistent, manually entered engineering notes. These are not automatically verified test results.</p>
+              <form onSubmit={saveDesk} style={styles.card}>
+                <div style={{ display: 'grid', gap: 12 }}>
+                  <input style={styles.input} placeholder="Entry title" value={deskTitle} onChange={e => setDeskTitle(e.target.value)} required maxLength={160} />
+                  <textarea style={{ ...styles.input, minHeight: 90 }} placeholder="Evidence, findings or next steps" value={deskDetail} onChange={e => setDeskDetail(e.target.value)} required maxLength={4000} />
+                  <select style={styles.input} value={deskStatus} onChange={e => setDeskStatus(e.target.value)}>
+                    <option value="note">Note</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="review">Needs review</option>
+                  </select>
+                  <button type="submit" style={styles.btn}>Save persistent entry</button>
+                </div>
+              </form>
+              {!deskReady && <div style={styles.card}>Desk requires a configured PostgreSQL database and migration.</div>}
+              {deskItems.map(item => <div key={item.id} style={styles.card}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <strong>{item.title}</strong><span style={styles.state('')}>{item.status}</span>
+                </div>
+                <p style={styles.mono}>{item.detail}</p>
+                <div style={{ fontSize: 11, color: '#a8a3c0' }}>{item.created_at}</div>
+              </div>)}
+            </div>
+          )}
+
           {view === 'addons' && (
             <div>
-              <h2>Addons (from Open Source AI Stack)</h2>
+              <h2>Integration readiness</h2><p style={{ color: '#a8a3c0' }}>Only the Google Jules provider is wired to execute coding tasks. All other harnesses remain unavailable until independently integrated and tested.</p>
               <div style={styles.card}>
                 <h3>Gateway / Router</h3>
                 <p>LiteLLM / Bifrost / Portkey style OpenAI-compatible proxy. Point Jules or local agents at your own router for cost, failover, and free models.</p>
@@ -266,12 +325,12 @@ export default function Home() {
               </div>
               <div style={styles.card}>
                 <h3>Memory</h3>
-                <p>Mem0 / OpenMemory / Graphiti style long-term memory. Store session outcomes, AGENTS.md patterns, and user preferences.</p>
+                <p>Mem0 / OpenMemory / Graphiti style long-term memory. Persistent memory integration is not configured. Use the separate Desk journal for manually entered notes.</p>
                 <code>GET/POST /api/memory</code>
               </div>
               <div style={styles.card}>
                 <h3>Grok Bot + OpenClaw</h3>
-                <p>Persistent routines and multi-channel local assistant hooks. Open Jules bot already created for backend continuity.</p>
+                <p>Persistent routines and multi-channel local assistant hooks. Not integrated; no active agent or bot status is available.</p>
               </div>
             </div>
           )}

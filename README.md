@@ -37,3 +37,13 @@ The project currently delegates coding execution to Google's Jules API. No local
 Production multi-user deployment requires account-backed authentication, repository authorization, durable state, security tests, audit logs, and operational rate limits.
 
 Official Jules reference: https://jules.google/docs/api/reference/
+
+## v0.3 Desk backend
+
+Optional PostgreSQL-backed evidence journal inspired by the uploaded workspace. Configure `DATABASE_URL` to a PostgreSQL database, then apply [`migrations/0001_desk.sql`](migrations/0001_desk.sql) using your database migration process before opening **Desk / Evidence**.
+
+Journal entries are user-authored records and are never labeled as automatically verified test results. No database configured → the endpoint returns 503, rather than claiming to persist data.
+
+`OPEN_JULES_PASSWORD` still protects all API routes. HTTP Basic is intended for one operator behind HTTPS, not public multi-tenancy.
+
+Read [the ZIP audit](docs/ZIP_AUDIT.md) before importing additional pieces. The supplied TanStack app is not directly source-compatible with Next.js and its timed agent and benchmark routines are simulations.
