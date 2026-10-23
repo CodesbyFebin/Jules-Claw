@@ -12,7 +12,7 @@ function equalSecrets(a, b) {
 export function middleware(request) {
   const configured = process.env.OPEN_JULES_PASSWORD;
   if (!configured || configured.length < 16) {
-    return new NextResponse('Open Jules is locked: configure OPEN_JULES_PASSWORD (16+ characters)', { status: 503 });
+    return new NextResponse('Jules Claw is locked: configure OPEN_JULES_PASSWORD (16+ characters)', { status: 503 });
   }
   const header = request.headers.get('authorization') || '';
   let valid = false;
@@ -26,7 +26,7 @@ export function middleware(request) {
   if (!valid) {
     return new NextResponse('Authentication required', {
       status: 401,
-      headers: { 'WWW-Authenticate': 'Basic realm="Open Jules", charset="UTF-8"', 'Cache-Control': 'no-store' },
+      headers: { 'WWW-Authenticate': 'Basic realm="Jules Claw", charset="UTF-8"', 'Cache-Control': 'no-store' },
     });
   }
   if (request.nextUrl.pathname.startsWith('/api/') && !['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
