@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Jules Claw — Autonomous Coding Control Plane',
-  description: 'Jules Claw by CodesbyFebin: manage real Google Jules coding sessions, plans, pull requests, verification jobs and evidence',
+  title: 'Open Web LLM — Local-First AI Control Plane',
+  description: 'Open Web LLM by CodesbyFebin: private agent operations, coding sessions, approvals, verification jobs and evidence',
 };
 
 export default function RootLayout({ children }) {
