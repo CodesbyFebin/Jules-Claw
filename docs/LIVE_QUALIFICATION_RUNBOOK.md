@@ -27,7 +27,7 @@ File: `.github/workflows/qualification-postgres.yml`
 
 | Gate | Required secure input/environment | Boundaries and exit evidence |
 | --- | --- | --- |
-| Browser/proxy session E2E | Isolated loopback application host, browser client and disposable credentials | CI covers real backend-handler signup, sessions, role checks, revocation and expiry. Still required: through-proxy browser cookie, CSRF, browser session replay and cross-tenant route tests. |
+| Browser/proxy session E2E | Disposable local Next.js server with headless Chromium and CI-only credentials | An additional CI gate drives real Chromium signup, sign-in, cookies, tenant-scoped desk reads/writes, Basic Auth and cross-origin denial, logout and expiry. Treat as PASS only after the CI step actually succeeds; more comprehensive adversarial CSRF, browser compatibility and public hosting reviews remain. |
 | Worker crash recovery | Docker-enabled Linux runner already available for syntax checks; separately configured `WORKER_DATABASE_URL` and scoped job fixtures | Kill worker during a leased job, restart it, require fenced/unknown status without duplicate side effects; observe actual container IDs and DB rows |
 | OpenShell hostile execution | **Separately approved, isolated Linux VM or dedicated host with OpenShell CLI** and no production credentials | Explicit sandbox ID, deny network/filesystem escape, cgroups/capabilities verification, hostile fixtures with captured exit codes; **do not run hostile payloads on GitHub shared runner** |
 | Local model fallback | Reachable sandboxed local inference endpoint (existing internal configuration key) or equivalent loopback model endpoint | Actual token generation and outage/recovery traces; isolated CI hosted VM cannot reach an arbitrary developer's localhost |
@@ -35,6 +35,13 @@ File: `.github/workflows/qualification-postgres.yml`
 | Coding provider | A supported coding-provider credential from GitHub Actions **secrets**, never source, logs or issue text | Single read-only/non-mutating bounded API request, explicit provider-confirmed free quota and rate limits; no PR creation or external writes by default |
 
 All provider credentials belong in an isolated secret manager or GitHub Actions secrets restricted to a manually reviewed environment. Never paste secret values in chat. Do not run provider calls merely because secrets exist: confirm provider's no-charge usage allocation at execution time and enforce local request/time/token caps.
+
+
+## Independent security assessment — not yet certified
+
+Independent review must be completed by a separate qualified reviewer with access to the commit under review, the current threat model and complete application code. Required findings include authenticated and unauthenticated endpoint inventory, CSRF and origin bypass attempts, tenant privilege escalation, session fixation/replay, request smuggling and SSRF, worker-to-database privilege scope, secrets exposure, OpenShell escape, supply-chain provenance, and validated remediation retests. Collect a signed or attributed report, fixed commit SHA, severity levels, and retest evidence. Automated CI checks are internal checks and **cannot count as an independent assessment**.
+
+The additional Chromium gate installs a pinned Playwright version on a standard public-repository runner, using an ephemeral browser and a loopback Next.js server. It does not use an external browser or send credentials to outside services. Run results are authoritative, not the existence of test code.
 
 ## Promotion criteria
 
