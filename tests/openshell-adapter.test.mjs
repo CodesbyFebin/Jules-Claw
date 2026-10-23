@@ -50,3 +50,12 @@ test('Nonzero sandbox exit is never recorded as pass', async () => {
   assert.equal(result.exitCode, 74);
   assert.equal(result.passed, false);
 });
+
+test('pinned syntax execution accepts only fixed code and a full source digest', () => {
+  assert.throws(() => buildOpenShellArgs('pinned-syntax', env, 'latest'), /digest/);
+  const args = buildOpenShellArgs('pinned-syntax', env, 'b'.repeat(64));
+  assert.deepEqual(args.slice(0, 9), ['sandbox','exec','--name','jules-test','--workdir','/workspace','--no-tty','--','node']);
+  assert.equal(args[9], '-e');
+  assert.match(args[10], /readFileSync\('\/workspace\/target\.mjs'\)/);
+  assert.equal(args[11], 'b'.repeat(64));
+});
