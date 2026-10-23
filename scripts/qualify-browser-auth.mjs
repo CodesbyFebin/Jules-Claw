@@ -58,9 +58,9 @@ try {
   await pool.query("INSERT INTO jules_tenant_memberships (tenant_id,user_id,role) VALUES ($1,$2,'owner'),($3,$4,'viewer')",
     [fixtures[0].tenant, owner.userId, fixtures[1].tenant, viewer.userId]);
 
-  const ownerWrite = await api(owner.page, 'POST', '/api/desk', { title: 'browser owner', detail: 'isolated real row', status: 'todo' });
+  const ownerWrite = await api(owner.page, 'POST', '/api/desk', { title: 'browser owner', detail: 'isolated real row', status: 'note' });
   assert.equal(ownerWrite.status, 201, JSON.stringify(ownerWrite.body));
-  const viewerWrite = await api(viewer.page, 'POST', '/api/desk', { title: 'forbidden', detail: 'should not write', status: 'todo' });
+  const viewerWrite = await api(viewer.page, 'POST', '/api/desk', { title: 'forbidden', detail: 'should not write', status: 'note' });
   assert.equal(viewerWrite.status, 403, 'Viewer cannot mutate API');
   const ownerRead = await api(owner.page, 'GET', '/api/desk');
   const viewerRead = await api(viewer.page, 'GET', '/api/desk');
@@ -73,7 +73,7 @@ try {
   const forged = await fetch(baseURL + '/api/desk', { method: 'POST', headers: {
     authorization: 'Basic ' + Buffer.from('admin:' + basicPassword).toString('base64'),
     origin: 'https://attacker.invalid', 'content-type': 'application/json',
-  }, body: JSON.stringify({ title: 'csrf', detail: 'must be rejected', status: 'todo' }) });
+  }, body: JSON.stringify({ title: 'csrf', detail: 'must be rejected', status: 'note' }) });
   assert.equal(forged.status, 403, 'Cross-origin mutation rejected');
 
   const signout = await api(owner.page, 'POST', '/api/auth/sign-out', {});
