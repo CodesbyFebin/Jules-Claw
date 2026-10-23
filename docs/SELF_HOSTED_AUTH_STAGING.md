@@ -2,7 +2,7 @@
 
 **Pain point:** a shared HTTP Basic password cannot represent independently revocable users or tenant memberships.
 
-Jules Claw now pins Better Auth as a self-hosted identity dependency and exposes its Next.js route **behind the existing local Basic-auth proxy**, not instead of it. This is an isolated staging foundation; it does **not** enable public hosting, RBAC, or tenant access to existing APIs.
+Open Web LLM now pins Better Auth as a self-hosted identity dependency and exposes its Next.js route **behind the existing local Basic-auth proxy**, not instead of it. This is an isolated staging foundation; it does **not** enable public hosting or globally qualified RBAC.
 
 ## Required setup
 
