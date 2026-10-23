@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { openMemory, remember, recall, forget, validateMemory } from '../lib/local-memory.mjs';
+import { openMemory, openMemoryForTenant, remember, recall, forget, validateMemory } from '../lib/local-memory.mjs';
+import { LOCAL_TENANT } from '../lib/tenant-db.mjs';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { capabilityState, CAPABILITY } from '../lib/capability-state.mjs';
 import { localModelConfig } from '../lib/gateway-failover.js';
 
@@ -22,6 +26,23 @@ test('invalid and untrusted memories are rejected', () => {
   assert.match(validateMemory({ key: 'x', value: 'x', source: '', confidence: 1 }), /Source/);
   assert.match(validateMemory({ key: '../private', value: 'x', source: 'user', confidence: 1 }), /key/);
   assert.match(validateMemory({ key: 'ok', value: 'x', source: 'web', confidence: 9 }), /Confidence/);
+});
+
+test('tenant memory is physically separated with independent WAL and revisions', () => {
+  const folder = mkdtempSync(join(tmpdir(), 'open-web-llm-tenant-'));
+  const file = join(folder, 'memory.sqlite');
+  const otherTenant = '00000000-0000-4000-8000-000000000002';
+  try {
+    const first = openMemoryForTenant(LOCAL_TENANT, file);
+    const second = openMemoryForTenant(otherTenant, file);
+    remember(first, { key: 'secret', value: 'alpha-private', source: 'owner', confidence: 1 });
+    remember(second, { key: 'secret', value: 'beta-private', source: 'owner', confidence: 1 });
+    assert.equal(recall(first, 'beta-private').length, 0);
+    assert.equal(recall(second, 'alpha-private').length, 0);
+    assert.equal(recall(first, 'secret')[0].value, 'alpha-private');
+    assert.equal(recall(second, 'secret')[0].value, 'beta-private');
+    first.close(); second.close();
+  } finally { rmSync(folder, { recursive: true, force: true }); }
 });
 
 test('capability ladder fails closed and prioritizes host health', () => {
