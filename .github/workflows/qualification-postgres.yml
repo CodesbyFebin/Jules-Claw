@@ -1,0 +1,109 @@
+name: Open Web LLM — Disposable PostgreSQL qualification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/qualification-postgres.yml'
+      - 'scripts/qualify-postgres.mjs'
+      - 'migrations/**'
+      - 'tests/lease-integration.mjs'
+      - 'lib/quotas.js'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: open-web-llm-postgres-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_disposable_not_prod
+          POSTGRES_DB: open_web_llm_qualification
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d open_web_llm_qualification"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: ci_disposable_not_prod
+      PGDATABASE: open_web_llm_qualification
+      QUALIFICATION_DISPOSABLE: I_CONFIRM_DISPOSABLE
+      QUALIFY_ADMIN_URL: postgresql://postgres:ci_disposable_not_prod@127.0.0.1:5432/open_web_llm_qualification
+      QUALIFY_APP_URL: postgresql://owll_app_ci:ci_app_disposable@127.0.0.1:5432/open_web_llm_qualification
+      QUALIFY_WORKER_URL: postgresql://owll_worker_ci:ci_worker_disposable@127.0.0.1:5432/open_web_llm_qualification
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify fresh database and lease recovery first
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(psql -Atqc 'SELECT current_database()')" = open_web_llm_qualification
+          TEST_DATABASE_URL="$QUALIFY_ADMIN_URL" npm run test:leases
+      - name: Apply all versioned migrations in order
+        shell: bash
+        run: |
+          set -euo pipefail
+          for migration in migrations/000{1,2,3,4,5,6,7}_*.sql; do
+            test -f "$migration"
+            psql -X -v ON_ERROR_STOP=1 --single-transaction -f "$migration"
+          done
+      - name: Provision independently privileged non-bypass roles
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql -X -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE owll_app_ci LOGIN PASSWORD 'ci_app_disposable' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+          CREATE ROLE owll_worker_ci LOGIN PASSWORD 'ci_worker_disposable' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+          GRANT CONNECT ON DATABASE open_web_llm_qualification TO owll_app_ci, owll_worker_ci;
+          GRANT USAGE ON SCHEMA public TO owll_app_ci, owll_worker_ci;
+          GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA public TO owll_app_ci, owll_worker_ci;
+          GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA public TO owll_app_ci, owll_worker_ci;
+          SQL
+      - name: Live RLS, cross-tenant, concurrent and role tests
+        run: node scripts/qualify-postgres.mjs
+      - name: Backup and restore into a second disposable database
+        shell: bash
+        run: |
+          set -euo pipefail
+          pg_dump --format=custom --no-owner --no-acl --file="$RUNNER_TEMP/owll-qualification.dump" open_web_llm_qualification
+          createdb open_web_llm_qualification_restored
+          pg_restore --exit-on-error --no-owner --no-acl --dbname=open_web_llm_qualification_restored "$RUNNER_TEMP/owll-qualification.dump"
+          restored="$(psql -At -d open_web_llm_qualification_restored -c "SELECT count(*) FROM desk_entries WHERE title IN ('a isolated','b isolated')")"
+          test "$restored" = 2
+          policies="$(psql -At -d open_web_llm_qualification_restored -c "SELECT count(*) FROM pg_class WHERE relname IN ('desk_entries','verification_jobs') AND relrowsecurity AND relforcerowsecurity")"
+          test "$policies" = 2
+          echo "Backup, independent restore, row count, and FORCE RLS: PASS"
+      - name: Publish evidence summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Open Web LLM disposable PostgreSQL qualification"
+            echo "- Runner: standard GitHub-hosted ubuntu-latest, public repository."
+            echo "- PostgreSQL: ephemeral service container, no external database or provider credential."
+            echo "- Results: inspect step exit codes; never infer completion of authentication, OpenShell, external LLM or coding-provider gates."
+            echo "- Database discarded automatically with this job; backup confined to ephemeral runner storage."
+          } >> "$GITHUB_STEP_SUMMARY"
