@@ -1,4 +1,4 @@
-# Jules Claw local-first foundation — evidence and limits
+# Open Web LLM local-first foundation — evidence and limits
 
 This is an incremental implementation, **not** the full 2030 specification or a benchmark victory over other agents.
 
