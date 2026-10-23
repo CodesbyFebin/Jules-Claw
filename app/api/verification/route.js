@@ -1,6 +1,7 @@
 import { getPool } from '../../../lib/desk';
 import { pullRequestEvidence, parseGitHubPullRequestUrl } from '../../../lib/github-evidence';
 import { validateVerificationJob } from '../../../lib/verification';
+import { consumeQuota } from '../../../lib/quotas';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,9 @@ export async function POST(request) {
     const body = await request.json();
     const problem = validateVerificationJob(body);
     if (problem) return Response.json({ error: problem }, { status: 400 });
+    // One global operator budget until real per-user identities are available.
+    const quota = await consumeQuota(getPool(), 'verify_enqueue', 30);
+    if (!quota.allowed) return Response.json({ error: 'Shared verification quota exceeded', quota }, { status: 429, headers: { 'Cache-Control': 'no-store' } });
     parseGitHubPullRequestUrl(body.pullRequestUrl);
     const evidence = await pullRequestEvidence(body.pullRequestUrl);
     if (evidence.headRepositoryPrivate) return Response.json({ error: 'Private head repositories are not supported by this public-repository verifier' }, { status: 422 });
