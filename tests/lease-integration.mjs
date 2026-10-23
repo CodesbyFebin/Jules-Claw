@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import pg from 'pg';
+import { consumeQuota } from '../lib/quotas.js';
 
 const connectionString = process.env.TEST_DATABASE_URL;
 if (!connectionString) throw new Error('TEST_DATABASE_URL required; use a disposable test database');
 const pool = new pg.Pool({ connectionString });
 const id = 'f3474fcb-4313-4f55-817f-9ad7c10f85ea';
 try {
-  for (const n of ['0002_verification_jobs.sql', '0003_worker_leases.sql']) {
+  for (const n of ['0002_verification_jobs.sql', '0003_worker_leases.sql', '0004_audit_quotas.sql']) {
     await pool.query(await readFile(new URL('../migrations/' + n, import.meta.url), 'utf8'));
   }
   await pool.query("INSERT INTO verification_jobs (id,pull_request_url,repo_owner,repo_name,commit_sha,profile) VALUES ($1,$2,$3,$4,$5,$6)", [id,'https://github.com/a/b/pull/1','a','b','a'.repeat(40),'syntax']);
@@ -28,8 +29,18 @@ try {
   assert.equal(state.rows[0].status, 'infra_failure');
   assert.equal(state.rows[0].attempts, 1);
   assert.match(state.rows[0].stderr, /result unknown/);
+  const events = await pool.query('SELECT event,old_status,new_status FROM execution_audit WHERE job_id=$1 ORDER BY id', [id]);
+  assert.deepEqual(events.rows.map(row => row.new_status), ['queued','running','infra_failure']);
+  assert.equal(events.rows[0].event, 'created');
+  const prefix = 'ci_verify_' + Date.now();
+  const fixed = new Date('2026-10-23T10:00:00Z');
+  const attempts = await Promise.all(Array.from({ length: 7 }, () => consumeQuota(pool, prefix, 3, 3600, fixed)));
+  assert.equal(attempts.filter(x => x.allowed).length, 3);
+  assert.equal(attempts.filter(x => !x.allowed).length, 4);
+  await pool.query('DELETE FROM request_quotas WHERE operation=$1', [prefix]);
   process.stdout.write('Lease ownership, heartbeat expiry, fencing and recovery: PASS\n');
 } finally {
   await pool.query('DELETE FROM verification_jobs WHERE id=$1', [id]).catch(() => {});
+  await pool.query('DELETE FROM execution_audit WHERE job_id=$1', [id]).catch(() => {});
   await pool.end();
 }
