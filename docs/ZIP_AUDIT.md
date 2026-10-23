@@ -30,4 +30,4 @@ Source: user-supplied `yhvpd1kJHxT2FZMK-grok-workspace.zip`, inspected without e
 
 ## Remaining
 - Multi-user RBAC, durable job orchestration, scoped provider credentials, isolated execution workers and real benchmark adapters need separate implementation.
-- Live Jules and PostgreSQL deployments remain unverified without configured credentials.
+- Live coding-provider and PostgreSQL deployments remain unverified without configured credentials.
