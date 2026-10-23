@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { mkdtemp, rm, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -10,6 +11,8 @@ const pool = new pg.Pool({ connectionString: url, max: 2 });
 const image = process.env.VERIFIER_IMAGE || 'open-jules-verifier:local';
 const pollMs = 3000;
 const outputLimit = 32000;
+const workerId = randomUUID();
+const heartbeatMs = 5000;
 
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -33,11 +36,37 @@ async function claim() {
     const found = await conn.query("SELECT * FROM verification_jobs WHERE status='queued' ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1");
     if (!found.rowCount) { await conn.query('COMMIT'); return null; }
     const job = found.rows[0];
-    await conn.query("UPDATE verification_jobs SET status='running', started_at=now() WHERE id=$1", [job.id]);
+    await conn.query("UPDATE verification_jobs SET status='running', started_at=now(), heartbeat_at=now(), worker_id=$2, attempts=attempts+1 WHERE id=$1", [job.id, workerId]);
     await conn.query('COMMIT');
     return job;
   } catch (e) { await conn.query('ROLLBACK'); throw e; }
   finally { conn.release(); }
+}
+
+async function heartbeat(id) {
+  const r = await pool.query(
+    "UPDATE verification_jobs SET heartbeat_at=now() WHERE id=$1 AND worker_id=$2 AND status='running' RETURNING id",
+    [id, workerId]
+  );
+  return r.rowCount === 1;
+}
+
+async function recoverStale() {
+  // Abandoned jobs are terminal infra failures, never inferred successes or silently retried.
+  const r = await pool.query(
+    `UPDATE verification_jobs SET status='infra_failure', finished_at=now(),
+       stderr=right(stderr || E'\\nWorker heartbeat expired; result unknown.', $1)
+       WHERE status='running' AND (heartbeat_at IS NULL OR heartbeat_at < now() - interval '5 minutes')
+       RETURNING id`,
+    [outputLimit]
+  );
+  for (const row of r.rows) {
+    try {
+      const cleanup = await run('docker', ['rm', '-f', 'open-jules-' + row.id], { timeout: 10000 });
+      if (cleanup.code !== 0) process.stderr.write('Stale container cleanup: ' + cleanup.stderr + '\n');
+    } catch (e) { process.stderr.write('Stale container cleanup unavailable: ' + e.message + '\n'); }
+  }
+  return r.rowCount;
 }
 
 async function cancelled(id) {
@@ -46,10 +75,12 @@ async function cancelled(id) {
 }
 
 async function finish(job, status, result) {
-  const current = await cancelled(job.id);
   await pool.query(
-    'UPDATE verification_jobs SET status=$2, exit_code=$3, stdout=$4, stderr=$5, finished_at=now() WHERE id=$1',
-    [job.id, current ? 'cancelled' : status, result.code ?? null, result.stdout || '', result.stderr || '']
+    `UPDATE verification_jobs SET
+       status=CASE WHEN cancel_requested THEN 'cancelled' ELSE $3 END,
+       exit_code=$4, stdout=$5, stderr=$6, finished_at=now(), heartbeat_at=now()
+       WHERE id=$1 AND worker_id=$2 AND status='running'`,
+    [job.id, workerId, status, result.code ?? null, result.stdout || '', result.stderr || '']
   );
 }
 
@@ -57,6 +88,9 @@ async function verify(job) {
   const temp = await mkdtemp(join(tmpdir(), 'open-jules-verify-'));
   const containerName = 'open-jules-' + job.id;
   let result = { code: null, stdout: '', stderr: '' };
+  const beat = setInterval(() => {
+    heartbeat(job.id).catch(e => process.stderr.write('Heartbeat failure: ' + e.message + '\n'));
+  }, heartbeatMs);
   try {
     const repo = 'https://github.com/' + job.repo_owner + '/' + job.repo_name + '.git';
     // The API resolves this SHA from GitHub; the worker never executes user-provided shell.
@@ -97,6 +131,7 @@ async function verify(job) {
   } catch (e) {
     await finish(job, 'infra_failure', { ...result, stderr: (result.stderr + '\n' + e.message).slice(-outputLimit) });
   } finally {
+    clearInterval(beat);
     await rm(temp, { recursive: true, force: true });
   }
 }
@@ -104,7 +139,12 @@ async function verify(job) {
 let stopping = false;
 process.on('SIGTERM', () => { stopping = true; });
 try {
+  let lastRecovery = 0;
   while (!stopping) {
+    if (Date.now() - lastRecovery > 30000) {
+      await recoverStale();
+      lastRecovery = Date.now();
+    }
     const job = await claim();
     if (job) await verify(job);
     else await new Promise(r => setTimeout(r, pollMs));
