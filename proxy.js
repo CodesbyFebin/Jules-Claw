@@ -45,7 +45,12 @@ export function proxy(request) {
   }
   if (request.nextUrl.pathname.startsWith('/api/') && !['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
     const origin = request.headers.get('origin');
-    if (origin && origin !== request.nextUrl.origin) {
+    // The browser-facing Host can differ from Next.js's normalized nextUrl.origin.
+    // Compare against the actual loopback authority while retaining strict Origin denial.
+    const host = request.headers.get('host') || '';
+    const loopbackHost = /^(?:127\\.0\\.0\\.1|localhost|\\[::1\\])(?::[0-9]{1,5})?$/.test(host);
+    const expectedOrigin = loopbackHost ? new URL(request.nextUrl.protocol + '//' + host).origin : '';
+    if (origin && (!expectedOrigin || origin !== expectedOrigin)) {
       return NextResponse.json({ error: 'Cross-origin mutations are forbidden' }, { status: 403 });
     }
   }
