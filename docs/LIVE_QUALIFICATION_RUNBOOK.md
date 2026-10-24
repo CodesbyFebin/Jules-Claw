@@ -37,6 +37,8 @@ File: `.github/workflows/qualification-postgres.yml`
 All provider credentials belong in an isolated secret manager or GitHub Actions secrets restricted to a manually reviewed environment. Never paste secret values in chat. Do not run provider calls merely because secrets exist: confirm provider's no-charge usage allocation at execution time and enforce local request/time/token caps.
 
 
+**Executed browser evidence:** CI run [40043148799](https://github.com/CodesbyFebin/Jules-Claw/actions/runs/40043148799), commit `153cf7d91dde6ad24bf02391fa112db77b073402`: browser auth, tenant API, cookie revocation, expired sessions and forged-Origin denial passed. These checks do not replace an independent security assessment or production-host verification.
+
 ## Independent security assessment — not yet certified
 
 Independent review must be completed by a separate qualified reviewer with access to the commit under review, the current threat model and complete application code. Required findings include authenticated and unauthenticated endpoint inventory, CSRF and origin bypass attempts, tenant privilege escalation, session fixation/replay, request smuggling and SSRF, worker-to-database privilege scope, secrets exposure, OpenShell escape, supply-chain provenance, and validated remediation retests. Collect a signed or attributed report, fixed commit SHA, severity levels, and retest evidence. Automated CI checks are internal checks and **cannot count as an independent assessment**.
