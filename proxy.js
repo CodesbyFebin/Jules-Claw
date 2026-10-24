@@ -51,6 +51,7 @@ export function proxy(request) {
     const loopbackHost = /^(?:127\\.0\\.0\\.1|localhost|\\[::1\\])(?::[0-9]{1,5})?$/.test(host);
     const expectedOrigin = loopbackHost ? new URL(request.nextUrl.protocol + '//' + host).origin : '';
     if (origin && (!expectedOrigin || origin !== expectedOrigin)) {
+      if (process.env.QUALIFICATION_DISPOSABLE === 'I_CONFIRM_DISPOSABLE') console.warn('CI origin mismatch', JSON.stringify({ origin, host, expectedOrigin, nextOrigin: request.nextUrl.origin }));
       return NextResponse.json({ error: 'Cross-origin mutations are forbidden' }, { status: 403 });
     }
   }
